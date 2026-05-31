@@ -1,0 +1,159 @@
+import re
+import os
+import json
+import sys
+import requests
+
+# Configuration
+INPUT_FILE = "Recipes.md"
+OUTPUT_DIR = "recipes_json"
+OLLAMA_URL = "http://localhost:11434/api/chat"
+MODEL_NAME = "gemma4:latest"
+
+# The prompt for the LLM
+PROMPT_TEMPLATE = """
+Extract the recipe details from the following text.
+The output must be and valid JSON object with exactly these keys:
+- "title": The name of the recipe.
+- "ingredients": An array of strings, one for each ingredient.
+- "instructions": An array of strings, one for each step of the process.
+
+If a piece of information is missing, use an empty array or null.
+
+Text:
+{text}
+
+JSON Output:
+"""
+
+def parse_markdown_for_recipes(file_path):
+    """
+    Parses the markdown file, tracking the current # header as a category
+    and grouping ## headers as individual recipe chunks.
+    """
+    if not os.path.exists(file_path):
+        print(f"Error: {file_path} not found.")
+        return []
+
+    recipes = []
+    current_category = "Uncategorized"
+    current_recipe_chunk = None
+
+    with open(file_path, 'r', encoding='utf-8') as f:
+        for line in f:
+            # Check for Level 1 Header (Category)
+            if line.startswith('# '):
+                current_category = line.strip('# ').strip()
+            
+            # Check for Level 2 Header (Recipe Start)
+            elif line.startswith('## '):
+                # If we were already processing a recipe, save it before starting the next
+                if current_recipe_chunk:
+                    recipes.append(current_recipe_chunk)
+                
+                title = line.strip('# ').strip()
+                current_recipe_chunk = {
+                    'title': title,
+                    'content': line,  # Start content with the header itself
+                    'category': current_category
+                }
+            
+            # Append content to the current recipe chunk
+            else:
+                if current_recipe_chunk:
+                    current_recipe_chunk['content'] += line
+
+        # Don't forget to add the last recipe in the file
+        if current_recipe_chunk:
+            recipes.append(current_recipe_chunk)
+
+    return recipes
+
+def slugify(text):
+    """Creates a filesystem-friendly name from a title."""
+    text = text.lower()
+    text = re.sub(r'[^a-z0-9\s-]', '', text)
+    return re.sub(r'[\s-]+', '_', text).strip('_')
+
+def extract_recipe_with_llm(chunk_content):
+    """Sends a single chunk to Ollama for extraction."""
+    try:
+        payload = {
+            "model":
+            MODEL_NAME,
+            "messages": [
+                {"role": "user", "content": PROMPT_TEMPLATE.format(text=chunk_content)}
+            ],
+            "stream": False
+        }
+
+        response = requests.post(OLLAMA_URL, json=payload)
+        response.raise_for_status()
+
+        response_data = response.json()
+        response_text = response_data['message']['content']
+
+        json_match = re.search(r'(\{.*?\})', response_text, re.DOTALL)
+        if json_match:
+            return json.loads(json_match.group(1))
+        else:
+            print("Could not find JSON in LLM response.")
+            return None
+    except Exception as e:
+        print(f"Error during LLM extraction: {e}")
+        return None
+
+def main():
+    if not os.path.exists(OUTPUT_DIR):
+        os.makedirs(OUTPUT_DIR)
+
+    if not os.path.exists(INPUT_FILE):
+        print(f"Error: {INPUT_FILE} not found.")
+        sys.exit(1)
+
+    print(f"Reading {INPUT_FILE}...")
+    # recipes is now a list of dicts: {'title': str, 'content': str, 'category': str}
+    recipes = parse_markdown_for_recipes(INPUT_FILE)
+    print(f"Found {len(recipes)} recipes to process.")
+
+    for i, recipe_info in enumerate(recipes):
+        title = recipe_info['title']
+        category = recipe_info['category']
+        filename = f"{slugify(title)}.json"
+        file_path = os.path.join(OUTPUT_DIR, filename)
+
+        print(f"[{i+1}/{len(recipes)}] Processing: {title} ({category})...")
+
+        if os.path.exists(file_path):
+            # --- LOGIC FOR EXISTING FILES ---
+            try:
+                with open(file_path, 'r', encoding='utf-8') as f:
+                    existing_data = json.load(f)
+                
+                if 'category' not in existing_data:
+                    print(f"  -> Found existing file. Adding missing category: {category}")
+                    existing_data['category'] = category
+                    with open(file_path, 'w', encoding='utf-8') as f:
+                        json.dump(recipe_data, f, indent=2, ensure_ascii=False)
+                else:
+                    print(f"  -> Existing file already has a category. Skipping.")
+            except Exception as e:
+                print(f"  -> Error updating existing file {filename}: {e}")
+        
+        else:
+            # --- LOGIC FOR NEW FILES ---
+            recipe_data = extract_recipe_with_llm(recipe_info['content'])
+
+            if recipe_data:
+                recipe_data['title'] = title
+                recipe_data['category'] = category # Include category in new files
+                with open(file_path, 'w', encoding='utf-8') as f:
+                    json.dump(recipe_data, f, indent=2, ensureASSII=False)
+                print(f"  -> Saved new recipe to {file_path}")
+            else:
+                print(f"  -> Failed to extract {title}")
+
+    print("\nExtraction complete!")
+
+if __name__ == "__main__":
+    main()

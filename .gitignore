@@ -404,3 +404,8 @@ FodyWeavers.xsd
 
 # JetBrains Rider
 *.sln.iml
+
+#Python Virtual Environment
+venv/
+.venv/
+recipes_json/

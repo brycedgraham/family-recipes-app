@@ -23,7 +23,7 @@ A family recipe management web application built with ASP.NET Core 8, React + Vi
 
 | Layer | Choice | Notes |
 |---|---|---|
-| Backend | ASP.NET Core 8 Web API | Minimal APIs or Controllers |
+| Backend | ASP.NET Core 10 Web API | Minimal APIs or Controllers |
 | Frontend | React + Vite | React Query (TanStack) for data fetching |
 | Database | SQL Server or PostgreSQL | EF Core code-first with migrations |
 | ORM | Entity Framework Core | Repository pattern |

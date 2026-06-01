@@ -409,3 +409,4 @@ FodyWeavers.xsd
 venv/
 .venv/
 recipes_json/
+.env

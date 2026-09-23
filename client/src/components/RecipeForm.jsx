@@ -1,9 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 
-// Assuming mockRecipes is accessible for pre-filling the form in edit mode.
-// In a real app, you'd fetch this data.
-import { mockRecipes } from '../mockData'; // Updated import for mock data
+import { fetchRecipe, createRecipe, updateRecipe } from '../api';
 
 /**
  * @param {{ isEditMode?: boolean }} props
@@ -17,39 +15,41 @@ function RecipeForm({ isEditMode = false }) {
   const [categories, setCategories] = useState(''); // Comma-separated string for simplicity
   const [ingredients, setIngredients] = useState([{ name: '', quantity: '' }]); // Array of objects
   const [instructions, setInstructions] = useState(''); // Comma-separated string or one per line
-  const [imageUrls, setImageUrls] = useState(''); // Comma-separated string
   const [prepTime, setPrepTime] = useState('');
   const [cookTime, setCookTime] = useState('');
   const [servings, setServings] = useState('');
+  const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
     if (isEditMode && recipeId) {
-      const recipeToEdit = mockRecipes.find(r => r.id === recipeId);
-      if (recipeToEdit) {
-        setName(recipeToEdit.name);
-        setDescription(recipeToEdit.description);
-        setCategories(recipeToEdit.categories.join(', '));
-        setIngredients(recipeToEdit.ingredients.map(ing => ({ ...ing }))); // Shallow copy ingredients
-        setInstructions(recipeToEdit.instructions.join('\n'));
-        setImageUrls(recipeToEdit.imageUrls.join(', '));
-        setPrepTime(recipeToEdit.prepTime?.toString() || '');
-        setCookTime(recipeToEdit.cookTime?.toString() || '');
-        setServings(recipeToEdit.servings?.toString() || '');
-      } else {
-        // Handle recipe not found for editing, maybe navigate away or show error
-        navigate('/');
-      }
-    } else { // Reset form for "Add New" mode or if navigating away from edit
-      setName('');
-      setDescription('');
-      setCategories('');
-      setIngredients([{ name: '', quantity: '' }]);
-      setInstructions('');
-      setImageUrls('');
-      setPrepTime('');
-      setCookTime('');
-      setServings('');
+      let cancelled = false;
+      fetchRecipe(recipeId)
+        .then(recipeToEdit => {
+          if (cancelled) return;
+          setName(recipeToEdit.name);
+          setDescription(recipeToEdit.description || '');
+          setCategories((recipeToEdit.categories || []).join(', '));
+          setIngredients((recipeToEdit.ingredients || []).map(ing => ({ ...ing })));
+          setInstructions((recipeToEdit.instructions || []).join('\n'));
+          setPrepTime(recipeToEdit.prepTime?.toString() || '');
+          setCookTime(recipeToEdit.cookTime?.toString() || '');
+          setServings(recipeToEdit.servings?.toString() || '');
+        })
+        .catch(err => {
+          console.error('Failed to load recipe for editing:', err);
+          if (!cancelled) navigate('/');
+        });
+      return () => { cancelled = true; };
     }
+    // Reset form for "Add New" mode or when navigating away from edit
+    setName('');
+    setDescription('');
+    setCategories('');
+    setIngredients([{ name: '', quantity: '' }]);
+    setInstructions('');
+    setPrepTime('');
+    setCookTime('');
+    setServings('');
   }, [isEditMode, recipeId, navigate]);
 
   const handleIngredientChange = (index, field, value) => {
@@ -67,23 +67,29 @@ function RecipeForm({ isEditMode = false }) {
     setIngredients(newIngredients);
   };
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
-    // Placeholder for actual submission logic
-    const recipeData = {
+    const payload = {
       name,
-      description,
-      categories: categories.split(',').map(cat => cat.trim()),
-      ingredients, // In a real app, ensure ingredients are structured correctly
-      instructions: instructions.split('\n').map(inst => inst.trim()),
-      imageUrls: imageUrls.split(',').map(url => url.trim()),
-      prepTime: prepTime ? parseInt(prepTime) : undefined,
-      cookTime: cookTime ? parseInt(cookTime) : undefined,
-      servings: servings ? parseInt(servings) : undefined,
+      description: description.trim() || null,
+      categories: categories.split(',').map(cat => cat.trim()).filter(Boolean),
+      ingredients: ingredients
+        .filter(ing => ing.name.trim())
+        .map(ing => ({ name: ing.name.trim(), quantity: ing.quantity?.trim() || null })),
+      instructions: instructions.split('\n').map(inst => inst.trim()).filter(Boolean),
+      prepTime: prepTime ? parseInt(prepTime, 10) : null,
+      cookTime: cookTime ? parseInt(cookTime, 10) : null,
+      servings: servings ? parseInt(servings, 10) : null,
     };
-    console.log('Submitting recipe (placeholder):', recipeData);
-    alert(`Recipe data (placeholder): ${isEditMode ? 'Updated' : 'Created'}\n${JSON.stringify(recipeData, null, 2)}`);
-    navigate(isEditMode ? `/recipes/${recipeId}` : '/'); // Navigate after mock submission
+    setSubmitting(true);
+    try {
+      const saved = isEditMode ? await updateRecipe(recipeId, payload) : await createRecipe(payload);
+      navigate(`/recipes/${saved.id}`);
+    } catch (err) {
+      console.error('Failed to save recipe:', err);
+      alert(`Failed to save recipe: ${err.message}`);
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -137,10 +143,6 @@ function RecipeForm({ isEditMode = false }) {
           <textarea id="instructions" value={instructions} onChange={e => setInstructions(e.target.value)} rows="5" />
         </div>
 
-        <div>
-          <label htmlFor="imageUrls">Image URLs (comma-separated):</label>
-          <input type="text" id="imageUrls" value={imageUrls} onChange={e => setImageUrls(e.target.value)} />
-        </div>
 
         <div style={{display: "flex", gap: "15px", flexWrap: "wrap"}}>
           <div style={{flexGrow:1, minWidth: "120px"}}>
@@ -158,7 +160,7 @@ function RecipeForm({ isEditMode = false }) {
         </div>
 
         <div className="form-actions"> {/* Class for styling */}
-          <button type="submit">{isEditMode ? 'Save Changes' : 'Add Recipe'}</button>
+          <button type="submit" disabled={submitting}>{submitting ? 'Saving…' : isEditMode ? 'Save Changes' : 'Add Recipe'}</button>
           <button type="button" className="secondary" onClick={() => navigate(isEditMode ? `/recipes/${recipeId}` : '/')}>Cancel</button>
         </div>
       </form>

@@ -2,7 +2,7 @@ namespace RecipeApp.Core.Models;
 
 public class Recipe
 {
-    public Guid Id { get; set; } = Guid.CreateVersion7();
+    public Guid Id { get; set; }
     public string Title { get; set; } = string.Empty;
     public string? Description { get; set; }
     public string? Cuisine { get; set; }

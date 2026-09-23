@@ -36,20 +36,28 @@ function RecipeDetail({ recipe }) {
       )}
 
       <h2>Ingredients</h2>
-      <ul>
-        {recipe.ingredients.map((ingredient, index) => (
-          <li key={index}>
-            {ingredient.quantity} {ingredient.name}
-          </li>
-        ))}
-      </ul>
+      {recipe.ingredients.length === 0 ? (
+        <p>No ingredients listed.</p>
+      ) : (
+        <ul>
+          {recipe.ingredients.map((ingredient, index) => (
+            <li key={index}>
+              {[ingredient.quantity, ingredient.name].filter(Boolean).join(' ')}
+            </li>
+          ))}
+        </ul>
+      )}
 
       <h2>Instructions</h2>
-      <ol>
-        {recipe.instructions.map((step, index) => (
-          <li key={index} className="mb-1">{step}</li>
-        ))}
-      </ol>
+      {recipe.instructions.length === 0 ? (
+        <p>No instructions listed.</p>
+      ) : (
+        <ol>
+          {recipe.instructions.map((step, index) => (
+            <li key={index} className="mb-1">{step}</li>
+          ))}
+        </ol>
+      )}
     </div>
   );
 }

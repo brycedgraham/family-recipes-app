@@ -3,11 +3,11 @@ import React from 'react';
 /**
  * @param {{
  *   categories: import('../dataModels').Category[],
- *   onSelectCategory: (categoryId: string | null) => void,
- *   selectedCategoryId: string | null
+ *   onSelectCategory: (categoryName: string | null) => void,
+ *   selectedCategory: string | null - the selected category name, or null for "All Recipes"
  * }} props
  */
-function CategoryList({ categories, onSelectCategory, selectedCategoryId }) {
+function CategoryList({ categories, onSelectCategory, selectedCategory }) {
   return (
     <div className="CategoryList">
       <h3 style={{marginTop: '15px', marginBottom: '10px'}}>Categories</h3>
@@ -15,15 +15,15 @@ function CategoryList({ categories, onSelectCategory, selectedCategoryId }) {
         <li
           key="all"
           onClick={() => onSelectCategory(null)}
-          className={selectedCategoryId === null ? 'active-category' : ''}
+          className={selectedCategory === null ? 'active-category' : ''}
         >
           All Recipes
         </li>
         {categories.map(category => (
           <li
             key={category.id}
-            onClick={() => onSelectCategory(category.id)}
-            className={selectedCategoryId === category.id ? 'active-category' : ''}
+            onClick={() => onSelectCategory(category.name)}
+            className={selectedCategory === category.name ? 'active-category' : ''}
           >
             {category.name}
           </li>

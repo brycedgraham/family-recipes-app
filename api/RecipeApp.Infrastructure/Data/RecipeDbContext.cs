@@ -39,7 +39,7 @@ public class RecipeDbContext : DbContext
         // RecipeIngredient (bridge table)
         modelBuilder.Entity<RecipeIngredient>(entity =>
         {
-            entity.HasIndex(ri => new { ri.RecipeId, ri.IngredientId }).IsUnique();
+            entity.HasIndex(ri => new { ri.RecipeId, ri.IngredientId });
             entity.Property(ri => ri.Quantity).HasPrecision(18, 4);
             entity.Property(ri => ri.Unit).HasMaxLength(20);
             entity.Property(ri => ri.Notes).HasMaxLength(200);

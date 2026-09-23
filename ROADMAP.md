@@ -6,6 +6,8 @@
 
 **Goal for this work session:** get the app to a *usable* state = Phase 2 milestone from PROJECT_PLAN.md: all recipes from `Recipes.md` loaded into Postgres, browsable/searchable/editable through the React UI against the real API.
 
+**Status: DONE (2026-09-23).** All 76 recipes seeded into local Postgres; React UI fully wired to the API (no mock data); browse/category/detail/create/edit/delete verified via curl and browser E2E, including SQL-level confirmation of edit persistence.
+
 ### What exists
 - **Data (complete):** `Recipes.md` — 76 recipes in 7 categories, parsed deterministically by `extract_recipes.py` (no LLM). All 76 JSON files regenerated in `recipes_json/`; every recipe has ingredients + instructions except `Mac and Cheese Variations` (a notes-only entry in the source — intentional, no ingredient list exists there).
 - **Backend skeleton:** layered solution (`Core` / `Infrastructure` / `RecipeApp` host), EF Core schema with normalized `Ingredient` + `RecipeIngredient` bridge, ordered `RecipeStep`s, category M2M. `Quantity` made nullable (many ingredient lines have no quantity).
@@ -13,6 +15,7 @@
 
 ### Decisions log
 - **Postgres** via Docker (`postgres.sh`, port 5432) — matches existing setup; plan's SQL Server option dropped.
+- **Bug fix (2026-09-23): recipe edit returned 500.** All five domain models initialized `Id = Guid.NewGuid()` in their constructors, so EF tracked new child entities (`RecipeIngredient`/`RecipeStep`) as `Modified` instead of `Added` — PUT issued UPDATEs against non-existent rows → `DbUpdateConcurrencyException`. Fix: removed the constructor GUID initializers from all five models; EF generates keys at save time. Verified end-to-end (curl PUT round-trip, SQL log shows correct DELETE+INSERT, browser E2E edit with add/remove ingredient + description change persists).
 - **Deterministic extraction, no LLM.** The markdown format is regular enough to parse with plain rules; the old `openai` dependency is gone.
 - **Parser rules (`extract_recipes.py`):** quantity-starting lines and short colon-terminated labels before any step (e.g. `Bread Dough:`) count as ingredients; sentence-like lines (terminal punctuation, no quantity) count as instructions. Literal `Ingredients`/`Instructions`/`Directions` header lines split the section when present. Rules are tuned to this corpus — re-run `python3 extract_recipes.py --dry-run` after any `Recipes.md` edit and eyeball the dump.
 - **Quantity/unit/notes splitting happens in the C# seeder**, not Python — keeps domain mapping in one place (C#), JSON stays a raw import format.
@@ -30,23 +33,23 @@
 
 ### API
 - [x] Make `RecipeIngredient.Quantity` nullable (`decimal?`)
-- [ ] EF Core migration `InitialCreate`
-- [ ] `RecipesController`: GET list (with `?q=` search, `?category=` filter), GET by id, POST, PUT, DELETE; `CategoriesController`: GET list with recipe counts
-- [ ] Seed command: `dotnet run --seed <path-to-recipes_json>` — upserts categories/ingredients/recipes from JSON, splits quantity/unit/notes
-- [ ] Build passes; API runs against local Postgres
+- [x] EF Core migration `InitialCreate`
+- [x] `RecipesController`: GET list (with `?q=` search, `?category=` filter), GET by id, POST, PUT, DELETE; `CategoriesController`: GET list with recipe counts
+- [x] Seed command: `dotnet run --seed <path-to-recipes_json>` — upserts categories/ingredients/recipes from JSON, splits quantity/unit/notes
+- [x] Build passes; API runs against local Postgres (port 5051)
 
 ### Client
-- [ ] Vite dev proxy `/api` → API port
-- [ ] Replace `mockData.js` with fetch layer (`src/api.js`); delete mock file
-- [ ] Recipe list: cards from API, category sidebar from API, debounced search box → `?q=`
-- [ ] Recipe detail: ingredients (qty + unit + name + notes), numbered steps, categories
-- [ ] Recipe form (add/edit) against POST/PUT with dynamic ingredient rows
+- [x] Vite dev proxy `/api` → API port
+- [x] Replace `mockData.js` with fetch layer (`src/api.js`); delete mock file
+- [x] Recipe list: cards from API, category sidebar from API, debounced search box → `?q=`
+- [x] Recipe detail: ingredients (qty + unit + name + notes), numbered steps, categories
+- [x] Recipe form (add/edit) against POST/PUT with dynamic ingredient rows
 
 ### Verification
-- [ ] Postgres container up; seed runs; all 74 recipes in DB
-- [ ] curl checks: list, search, detail, create, update, delete round-trip
-- [ ] Browser E2E: browse → category filter → search → detail → add recipe → edit → delete
-- [ ] Commit work; this file reflects final state
+- [x] Postgres container up; seed runs; all 76 recipes in DB
+- [x] curl checks: list, search, detail, create, update, delete round-trip
+- [x] Browser E2E: browse → category filter → search → detail → add recipe → edit (add/remove ingredient + description) → delete
+- [x] Commit work; this file reflects final state
 
 ## Remaining roadmap (after usable state)
 

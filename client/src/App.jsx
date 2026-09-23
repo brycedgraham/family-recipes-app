@@ -3,45 +3,49 @@ import { Routes, Route, useParams, Link, useNavigate } from 'react-router-dom';
 import CategoryList from './components/CategoryList';
 import RecipeList from './components/RecipeList';
 import RecipeDetail from './components/RecipeDetail';
-import RecipeForm from './components/RecipeForm'; // Import the new form
-import { mockCategories, mockRecipes } from './mockData'; // Import mock data
+import RecipeForm from './components/RecipeForm';
+import { fetchRecipes, fetchCategories, fetchRecipe, deleteRecipe } from './api';
 import './App.css';
 
-// Component to handle the main layout with categories and recipe list
+// Main layout: category sidebar + recipe list, all data from the API.
 function HomeLayout() {
-  const [selectedCategoryId, setSelectedCategoryId] = useState(null);
-  const [recipesToDisplay, setRecipesToDisplay] = useState(mockRecipes);
-  // const navigate = useNavigate(); // Not strictly needed here anymore for category nav
+  const [categories, setCategories] = useState([]);
+  const [recipes, setRecipes] = useState(null); // null while loading
+  const [selectedCategory, setSelectedCategory] = useState(null); // category name, or null for all
+  const [searchInput, setSearchInput] = useState('');
+  const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
-    if (selectedCategoryId === null) {
-      setRecipesToDisplay(mockRecipes);
-    } else {
-      const selectedCategory = mockCategories.find(cat => cat.id === selectedCategoryId);
-      if (selectedCategory) {
-        setRecipesToDisplay(
-          mockRecipes.filter(recipe => recipe.categories.includes(selectedCategory.name))
-        );
-      } else {
-        setRecipesToDisplay([]);
-      }
-    }
-  }, [selectedCategoryId]);
+    fetchCategories()
+      .then(setCategories)
+      .catch(err => console.error('Failed to load categories:', err));
+  }, []);
 
-  const handleSelectCategory = (categoryId) => {
-    setSelectedCategoryId(categoryId);
-  };
+  // Debounce the search box so we don't hit the API on every keystroke.
+  useEffect(() => {
+    const timer = setTimeout(() => setSearchQuery(searchInput.trim()), 300);
+    return () => clearTimeout(timer);
+  }, [searchInput]);
+
+  useEffect(() => {
+    let cancelled = false;
+    setRecipes(null);
+    fetchRecipes({ q: searchQuery || undefined, category: selectedCategory })
+      .then(data => { if (!cancelled) setRecipes(data); })
+      .catch(err => { console.error('Failed to load recipes:', err); if (!cancelled) setRecipes([]); });
+    return () => { cancelled = true; };
+  }, [searchQuery, selectedCategory]);
 
   return (
     <div className="App"> {/* Use class from App.css */}
       <aside className="App-sidebar"> {/* Use class from App.css */}
         <h2>
-          <Link to="/" onClick={() => handleSelectCategory(null)}>Recipe App</Link>
+          <Link to="/" onClick={() => setSelectedCategory(null)}>Recipe App</Link>
         </h2>
         <CategoryList
-          categories={mockCategories}
-          onSelectCategory={handleSelectCategory}
-          selectedCategoryId={selectedCategoryId}
+          categories={categories}
+          onSelectCategory={setSelectedCategory}
+          selectedCategory={selectedCategory}
         />
         <hr style={{margin: "20px 0"}}/>
         <Link to="/recipes/new" className="button-link" style={{textAlign: 'center'}}>
@@ -49,19 +53,52 @@ function HomeLayout() {
         </Link>
       </aside>
       <main className="App-main-content"> {/* Use class from App.css */}
-        <RecipeList recipes={recipesToDisplay} />
+        <input
+          type="search"
+          placeholder="Search recipes…"
+          value={searchInput}
+          onChange={e => setSearchInput(e.target.value)}
+          style={{width: '100%', marginBottom: '15px', padding: '6px'}}
+        />
+        {recipes === null ? (
+          <p>Loading recipes…</p>
+        ) : (
+          <RecipeList recipes={recipes} />
+        )}
       </main>
     </div>
   );
 }
 
-// Component to display a single recipe's details
+// Component to display a single recipe's details, fetched by id.
 function RecipePage() {
   const { recipeId } = useParams();
-  const recipe = mockRecipes.find(r => r.id === recipeId);
   const navigate = useNavigate();
+  const [recipe, setRecipe] = useState(null);
+  const [notFound, setNotFound] = useState(false);
 
-  if (!recipe) {
+  useEffect(() => {
+    let cancelled = false;
+    fetchRecipe(recipeId)
+      .then(data => { if (!cancelled) setRecipe(data); })
+      .catch(err => {
+        console.error('Failed to load recipe:', err);
+        if (!cancelled) setNotFound(true);
+      });
+    return () => { cancelled = true; };
+  }, [recipeId]);
+
+  const handleDelete = async () => {
+    if (!window.confirm(`Delete "${recipe.name}"? This cannot be undone.`)) return;
+    try {
+      await deleteRecipe(recipe.id);
+      navigate('/');
+    } catch (err) {
+      alert(`Delete failed: ${err.message}`);
+    }
+  };
+
+  if (notFound) {
     return (
       <div className="container text-center mt-3">
         <p>Recipe not found.</p>
@@ -70,13 +107,22 @@ function RecipePage() {
     );
   }
 
+  if (!recipe) {
+    return (
+      <div className="App-main-content">
+        <p>Loading recipe…</p>
+      </div>
+    );
+  }
+
   return (
-    <div className="App-main-content"> {/* RecipePage now also uses App-main-content for consistent padding/scroll */}
+    <div className="App-main-content"> {/* Use class from App.css */}
       <nav className="mb-3">
-        <button onClick={() => navigate(-1)} className="mr-2 secondary">← Back</button>
-        <Link to={`/recipes/${recipeId}/edit`} className="button-link">
+        <button onClick={() => navigate(-1)} className="mr-2 secondary">&larr; Back</button>
+        <Link to={`/recipes/${recipe.id}/edit`} className="button-link">
           Edit Recipe
         </Link>
+        <button onClick={handleDelete} className="danger ml-2">Delete</button>
       </nav>
       <RecipeDetail recipe={recipe} />
     </div>

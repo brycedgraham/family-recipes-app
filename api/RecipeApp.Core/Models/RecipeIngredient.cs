@@ -2,7 +2,7 @@ namespace RecipeApp.Core.Models;
 
 public class RecipeIngredient
 {
-    public Guid Id { get; set; } = Guid.CreateVersion7();
+    public Guid Id { get; set; }
     public Guid RecipeId { get; set; }
     public Guid IngredientId { get; set; }
     public decimal? Quantity { get; set; }

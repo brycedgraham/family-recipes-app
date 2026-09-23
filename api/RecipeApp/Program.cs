@@ -1,8 +1,21 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using RecipeApp.Core.Interfaces;
 using RecipeApp.Infrastructure.Data;
 using RecipeApp.Infrastructure.Repositories;
+using RecipeApp.Api;
 
+// `dotnet run -- seed` imports recipes_json/*.json and exits.
+if (args.Contains("seed"))
+{
+    var configuration = new ConfigurationBuilder()
+        .SetBasePath(AppContext.BaseDirectory)
+        .AddJsonFile("appsettings.json", optional: true)
+        .AddJsonFile("appsettings.Development.json", optional: true)
+        .Build();
+    await SeedData.RunAsync(configuration);
+    return;
+}
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddOpenApi();

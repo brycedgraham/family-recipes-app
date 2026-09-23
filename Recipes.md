@@ -347,8 +347,6 @@ freshly cracked pepper to taste
 1/4 cup grated Parmesan    
 1/2 9 oz. bag fresh spinach 
 
-### 
-
 Boil water, add pasta and cook until tender (7-10) minutes. Drain the pasta in a colander.
 
 While waiting for the pasta to cook, dice the onion and mince the garlic. Cook both in a large skillet with the olive oil over medium-low heat until softened and transparent (about 5 minutes).
@@ -464,12 +462,6 @@ Breaded Chicken Burger Patties
 Parmesan
 
 Prepare sauce and noodles like regular spaghetti. While noodles are cooking, make the chicken patties. They need to be crispy in the oven or the spaghetti sauce will soak in and make them slimy.
-
-Stroganoff
-
-Dad’s Pasta
-
-Mom’s Pasta
 
 ## Marzetti  {#marzetti}
 
@@ -591,8 +583,6 @@ Olives
 Zuccini
 
 Start cooking noodles. Cut up the zuccini into ¼ inch thick triangles. Toss sauce, zucchini, and olives into a pan and heat until the zucchini is semi translucent. 
-
-Tuna Casserole
 
 ## Mac and Cheese Variations {#mac-and-cheese-variations}
 
@@ -947,10 +937,6 @@ Lightly grease a 12-cup muffin tin and place the Pillsbury biscuits into each cu
 Evenly spoon the pot pie mixture into each biscuit cup. Slide into the oven and bake for about 15 minutes. Check at the 12 minute mark.  
 Let rest for about 3 minutes and dig in\!
 
-Baked Lemon Garlic Fish
-
-Pan Fried Salmon Variations
-
 ## Firecracker Salmon {#firecracker-salmon}
 
 2 lbs. salmon fillets  
@@ -978,19 +964,7 @@ Mix all ingredients and add salmon fillets to mixture.  Marinate overnight and t
 3 Tb. mayonnaise  
 Mix all ingredients except halibut.  Grease a baking dish and arrange fillets in dish.  Broil fillets on high for 8 minutes, or until easily flaked with a fork.  Spread parmesan cheese mixture over fillets and continue to broil for an additional two minutes, or until topping is bubbly and light brown.
 
-Stuffing Chicken
-
-Tuna Sandwich
-
-Tuna Melt
-
-Cilantro and Lime Salmon
-
-Basil Lemon Chicken
-
-Leftover Turkey and Noodles
-
-Salmon with Lemon Garlic Cream Sauce
+## Salmon with Lemon Garlic Cream Sauce {#salmon-with-lemon-garlic-cream-sauce}
 
 FOR THE SALMON  
 2 tablespoons olive oil  
@@ -1212,16 +1186,15 @@ Serve immediately, garnished with parsley, if desired.
 ## Navajo Tacos {#navajo-tacos}
 
 Bread Dough:  
-*1 Tbs yeast*  
-*1/4 warm water*  
-*1/4-1/2 Tbs sugar*  
+1 Tbs yeast  
+1/4 warm water  
+1/4-1/2 Tbs sugar  
 2 cups water/milk (one of each, mixed and warmed to lukewarm)  
 1/4 c oil  
 1/4 c sugar  
 1 tsp salt  
 4-5 c flour  
-Toppings:  
-Chili, tomatoes, onions, cheese, shredded lettuce. OR jam, apple butter, honey, butter and cinnamon sugar...
+Toppings: Chili, tomatoes, onions, cheese, shredded lettuce. OR jam, apple butter, honey, butter and cinnamon sugar...  
 
 Activate the yeast in a small cup with the water and sugar (first 3 ingredients) and allow to work until at least doubled or to top of rainbow cup. Add all remaining ingredients to a large bowl minus flour and including activated yeast. add one cup of flour at a time until dough isn’t wet/super sticky to touch. Cover the bowl with a cloth and allow to rise 30 minutes.  
 Pinch off chunks and form into disks as flat as you can, size depending on preference and fry in heated oil until each side is light gold. cover in chili and toppings or jam, honey, cinnamon sugar, etc… 
@@ -1241,14 +1214,14 @@ Serve on buns and with your favorite sides.
 
 ## French Dip {#french-dip}
 
-3 lb beef chuck roast trimmed of excess fat\*  
+3 lb beef chuck roast trimmed of excess fat  
 1 tablespoon olive oil  
 6 French rolls or hoagie buns  
 12 slices provolone cheese  
-**Slow Cooker**  
+Slow Cooker  
 1/3 cup reduced sodium soy sauce  
 1 cup Coke NOT diet  
-2 10.5 oz. cans beef consommé \*\*  
+2 10.5 oz. cans beef consommé  
 1/4 cup dry minced onions  
 1 tablespoon beef bouillon  
 1 teaspoon garlic powder or more  
@@ -1299,12 +1272,6 @@ Peel and dice potatoes. Cover with water and add salt. Bring to a boil and simme
 
 Drain the potatoes and mash with a potato masher or a fork. Don’t over-mash\! You want them to only be slightly mashed. Add the cream, butter, sour cream and mustard. Season with salt and pepper. Serve with sausages with a side of mustard for dipping.
 
-Liver and Onions
-
-Homemade Pizza
-
-Pizza Buns/Bagels
-
 # **Sides and Sauces** {#sides-and-sauces}
 
 ## Baked French Fries {#baked-french-fries}
@@ -1323,10 +1290,6 @@ Directions:
 4\. Grab those potato slices and bring them back into the bowl and again using your hands toss them in the seasoning rub. Smoosh it around and mix it up and do your best to get a nice layer of that goodness all over the potato.  
 5\. Pam Spray the heck out of a baking sheet, don’t be shy on this one – and DON’T think you’re clever and put some aluminum foil on top of your baking sheet to save on the clean up. It won’t work this time. Trust me.  
 6\. Put your seasoned potato slices on your Pam Sprayed baking sheet and toss it in the oven for about 30 minutes. About half way through you need to grab a spatula and mix up the slices so that they can bake on both sides.  And keep an eye on them for when they’re done. If you sliced them thinly, they may finish in 25 minutes, if you sliced them thicker, they will take longer. If you sliced them poorly and have some skinny and some fat…well…you’ll have some extra crispy fries and some a little less done
-
-Grilled Zucchini
-
-Zucchini Tomato Saute
 
 ## Holiday Potatoes {#holiday-potatoes}
 
@@ -1375,9 +1338,7 @@ Pepper to taste
 
 Place potatoes in a greased 13-in. x 9-in. baking pan. Combine chicken stock, garlic powder and pepper; pour over potatoes. Dot with butter. Cover and bake at 400° for 1 hour and 15 minutes. Remove cover during last 15 minutes to brown.
 
-Garlic Baked Potatoes
-
-Garlic Parm Red Potatoes
+## Garlic Parm Red Potatoes {#garlic-parm-red-potatoes}
 
 Small red potatoes, quartered into wedges (enough to cover normal cookie sheet)  
 3 Tbsp olive oil  
@@ -1393,8 +1354,6 @@ INSTRUCTIONS:
 Preheat oven to 375 degrees.  
 In a large bowl, toss potatoes with olive oil, seasonings and parmesan. Toss until potatoes are evenly coated. Spread potatoes in a single layer on a foil lined 15x10-inch pan.  
 Bake, uncovered, for 45 to 50 minutes.
-
-Garlic Yellow Potato Wedges
 
 ## Mozzarella Sticks {#mozzarella-sticks}
 
@@ -1453,18 +1412,6 @@ Place buttermilk, mayonnaise, 2 tablespoons of lime juice, and ranch mix in a bl
 
 Add the butter, olive oil, minced garlic, garlic powder, salt, and italian seasoning to a bowl. Mix the ingredients together until they form a fairly smooth mixture.
 
-Steamed Artichokes
-
-Garlic Cabbage
-
-Pretzel Salad
-
-Kaylene’s Baked Beans
-
- Baked Spinach Artichoke Dip
-
-Lemon Basil Pesto
-
 ## Turkey Giblet Gravy {#turkey-giblet-gravy}
 
 Turkey neck and giblets reserved from a turkey  
@@ -1496,8 +1443,6 @@ If gravy is lumpy, strain through a fine mesh sieve and return to saucepan.
 Reduce heat, add giblets and continue stirring until gravy is thick and coats the back of a spoon.  
 Pour into serving bowl or gravy boat and serve.	
 
-Nana’s Potato Salad 
-
 # **Preserves** {#preserves}
 
 ## Grandma Maryn’s Chokecherry Syrup {#grandma-maryn’s-chokecherry-syrup}
@@ -1519,20 +1464,6 @@ Begin by removing stems and washing your chokecherries. Combine the chokecherrie
 Let the cherries cool; then pour them into an old, clean T-shirt or pillowcase set in a large bowl or pan. (This apparatus may then be suspended over the pan for several hours to allow as much of the juice as possible to drip out. It’s ok to help the process along by squeezing the T-shirt or pillowcase. The remains (pits and pulp) can then be thrown away.)  
 One pound of berries will yield approximately 1 cup of juice.
 
-Strawberry Rhubarb Jam
-
-Grandma Dixon’s Jams
-
-Grandma’s Pickles
-
-Apple Butter
-
-Canned Apples/Pears
-
-Applesauce
-
-Buttermilk Syrup
-
 ## Cranberry Christmas Slush {#cranberry-christmas-slush}
 
 48 oz pineapple juice  
@@ -1551,7 +1482,4 @@ Let stand on the counter one hour before serving.
 
 Using a sturdy fork or knife, chop mixture into large chunks.  
 Place pieces in goblet or punch bowl, pour sprite over and garnish as desired.
-
-Links  
-[https://kalynskitchen.com/roasted-sweet-potatoes-sausage-and-broccoli-sheet-pan-meal/](https://kalynskitchen.com/roasted-sweet-potatoes-sausage-and-broccoli-sheet-pan-meal/)
 

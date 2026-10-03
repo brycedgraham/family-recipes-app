@@ -26,7 +26,7 @@
  */
 
 // Example Usage (for illustration, will be replaced by actual data handling)
-const exampleRecipe = {
+const _exampleRecipe = {
   id: "1",
   name: "Classic Pancakes",
   description: "Fluffy and delicious pancakes, a breakfast favorite.",
@@ -53,7 +53,7 @@ const exampleRecipe = {
   servings: 4,
 };
 
-const exampleCategory = {
+const _exampleCategory = {
   id: "cat1",
   name: "Breakfast",
   description: "Start your day right with these delicious breakfast recipes."

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 
 import { fetchRecipe, createRecipe, updateRecipe } from '../api';
+import ThemeToggle from './ThemeToggle';
 
 /**
  * @param {{ isEditMode?: boolean }} props
@@ -97,6 +98,9 @@ function RecipeForm({ isEditMode = false }) {
     // The parent element that renders this might need App-main-content if it's not already there.
     // Assuming RecipeForm itself is the main content for these routes.
     <div className="App-main-content">
+      <div className="RecipeForm-topbar">
+        <ThemeToggle />
+      </div>
       <form onSubmit={handleSubmit} className="RecipeForm">
         <h2>{isEditMode ? 'Edit Recipe' : 'Add New Recipe'}</h2>
 

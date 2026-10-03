@@ -1,3 +1,50 @@
+/* Theme tokens. Light is default; dark overrides under [data-theme="dark"]. */
+:root {
+  --bg-app: #f8f9fa;
+  --bg-surface: #ffffff;
+  --text-primary: #333333;
+  --text-secondary: #555555;
+  --text-muted: #495057;
+  --text-heading: #343a40;
+  --input-text: #495057;
+  --border-subtle: #dee2e6;
+  --border-input: #ced4da;
+  --separator: #f0f0f0;
+  --hover-bg: #e9ecef;
+  --primary: #007bff;
+  --primary-hover: #0056b3;
+  --secondary: #6c757d;
+  --secondary-hover: #5a6268;
+  --danger: #dc3545;
+  --danger-hover: #c82333;
+  --input-bg: #ffffff;
+  --focus-border: #80bdff;
+  --focus-ring: rgba(0, 123, 255, 0.25);
+}
+
+[data-theme="dark"] {
+  --bg-app: #121417;
+  --bg-surface: #1c1f24;
+  --text-primary: #e8eaed;
+  --text-secondary: #aeb4bb;
+  --text-muted: #b3b9c0;
+  --text-heading: #f1f3f4;
+  --input-text: #dfe2e5;
+  --border-subtle: #3a3f46;
+  --border-input: #4a515a;
+  --separator: #2c3138;
+  --hover-bg: #2a2f36;
+  --primary: #4dabff;
+  --primary-hover: #3b93e8;
+  --secondary: #6c757d;
+  --secondary-hover: #7d868e;
+  --danger: #dc3545;
+  --danger-hover: #e05260;
+  --input-bg: #15181c;
+  --focus-border: #6db3ff;
+  --focus-ring: rgba(77, 171, 255, 0.35);
+}
+
 /* Basic Reset */
 * {
   box-sizing: border-box;
@@ -8,8 +55,8 @@
 body {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
   line-height: 1.6;
-  color: #333;
-  background-color: #f8f9fa; /* Lighter gray background */
+  color: var(--text-primary);
+  background-color: var(--bg-app); /* Lighter gray background */
   margin: 0; /* Ensure no default margin */
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -24,12 +71,12 @@ body {
 
 
 a {
-  color: #007bff; /* Standard link blue */
+  color: var(--primary); /* Standard link blue */
   text-decoration: none;
 }
 
 a:hover {
-  color: #0056b3;
+  color: var(--primary-hover);
   text-decoration: underline;
 }
 
@@ -58,10 +105,11 @@ h3 { font-size: 1.75rem; }
 /* Basic Button Styling */
 button,
 a.button-link { /* Class for anchor tags styled as buttons */
-  background-color: #007bff;
+  background-color: var(--primary);
   color: white;
-  border: 1px solid #007bff;
+  border: 1px solid var(--primary);
   padding: 10px 15px;
+  line-height: normal; /* match <button> so a.button-link is the same height */
   text-align: center;
   text-decoration: none;
   display: inline-block;
@@ -75,35 +123,35 @@ a.button-link { /* Class for anchor tags styled as buttons */
 
 button:hover,
 a.button-link:hover {
-  background-color: #0056b3;
-  border-color: #0056b3;
+  background-color: var(--primary-hover);
+  border-color: var(--primary-hover);
   color: white;
   text-decoration: none; /* Remove underline from link on hover */
 }
 
 button:focus, button:focus-visible,
 a.button-link:focus, a.button-link:focus-visible {
-  outline: 2px auto #0056b3; /* Simpler focus outline */
-  box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+  outline: 2px auto var(--primary-hover); /* Simpler focus outline */
+  box-shadow: 0 0 0 0.2rem var(--focus-ring);
 }
 
 
 button.secondary {
-    background-color: #6c757d;
-    border-color: #6c757d;
+    background-color: var(--secondary);
+    border-color: var(--secondary);
 }
 button.secondary:hover {
-    background-color: #5a6268;
-    border-color: #545b62;
+    background-color: var(--secondary-hover);
+    border-color: var(--secondary-hover);
 }
 
 button.danger {
-    background-color: #dc3545;
-    border-color: #dc3545;
+    background-color: var(--danger);
+    border-color: var(--danger);
 }
 button.danger:hover {
-    background-color: #c82333;
-    border-color: #bd2130;
+    background-color: var(--danger-hover);
+    border-color: var(--danger-hover);
 }
 
 
@@ -118,13 +166,13 @@ select { /* Added select for future use */
   width: 100%;
   padding: 0.5rem 0.75rem;
   margin-bottom: 0.75rem;
-  border: 1px solid #ced4da;
+  border: 1px solid var(--border-input);
   border-radius: 0.25rem;
   font-family: inherit;
   font-size: 1rem;
   line-height: 1.5;
-  color: #495057;
-  background-color: #fff;
+  color: var(--input-text);
+  background-color: var(--input-bg);
   transition: border-color .15s ease-in-out,box-shadow .15s ease-in-out;
 }
 
@@ -136,8 +184,8 @@ input[type="email"]:focus,
 textarea:focus,
 select:focus {
   outline: 0;
-  border-color: #80bdff;
-  box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+  border-color: var(--focus-border);
+  box-shadow: 0 0 0 0.2rem var(--focus-ring);
 }
 
 label {
@@ -170,11 +218,3 @@ label {
 .p-2 { padding: 0.5rem !important; }
 .p-3 { padding: 1rem !important; }
 
-/* Specific overrides for Vite's default dark mode if any linger */
-@media (prefers-color-scheme: dark) {
-  body {
-    /* Keep light theme for now unless explicitly designed for dark */
-    color: #333;
-    background-color: #f8f9fa;
-  }
-}

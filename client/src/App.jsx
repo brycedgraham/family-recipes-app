@@ -4,6 +4,7 @@ import CategoryList from './components/CategoryList';
 import RecipeList from './components/RecipeList';
 import RecipeDetail from './components/RecipeDetail';
 import RecipeForm from './components/RecipeForm';
+import ThemeToggle from './components/ThemeToggle';
 import { fetchRecipes, fetchCategories, fetchRecipe, deleteRecipe } from './api';
 import './App.css';
 
@@ -39,9 +40,12 @@ function HomeLayout() {
   return (
     <div className="App"> {/* Use class from App.css */}
       <aside className="App-sidebar"> {/* Use class from App.css */}
-        <h2>
-          <Link to="/" onClick={() => setSelectedCategory(null)}>Recipe App</Link>
-        </h2>
+        <div className="App-sidebar-header">
+          <h2>
+            <Link to="/" onClick={() => setSelectedCategory(null)}>Recipe App</Link>
+          </h2>
+          <ThemeToggle />
+        </div>
         <CategoryList
           categories={categories}
           onSelectCategory={setSelectedCategory}
@@ -117,12 +121,13 @@ function RecipePage() {
 
   return (
     <div className="App-main-content"> {/* Use class from App.css */}
-      <nav className="mb-3">
+      <nav className="mb-3 RecipePage-nav">
         <button onClick={() => navigate(-1)} className="mr-2 secondary">&larr; Back</button>
         <Link to={`/recipes/${recipe.id}/edit`} className="button-link">
           Edit Recipe
         </Link>
         <button onClick={handleDelete} className="danger ml-2">Delete</button>
+        <ThemeToggle />
       </nav>
       <RecipeDetail recipe={recipe} />
     </div>

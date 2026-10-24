@@ -30,6 +30,11 @@ public class ShoppingListItem
 
     public bool IsChecked { get; set; }
 
+    /// <summary>Store to buy this line at ("WinCo", "Costco"); null when unassigned.</summary>
+    public string? Store { get; set; }
+
+    /// <summary>Inherited from the ingredient (or toggled per item): show in the "Pantry Check" section.</summary>
+    public bool IsPantryStaple { get; set; }
     /// <summary>Display order within a category (0 = first).</summary>
     public int SortOrder { get; set; }
 

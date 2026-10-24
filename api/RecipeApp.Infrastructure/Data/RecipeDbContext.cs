@@ -39,6 +39,7 @@ public class RecipeDbContext : DbContext
             entity.Property(i => i.Name).HasMaxLength(200).IsRequired();
             entity.Property(i => i.NormalizedName).HasMaxLength(200).IsRequired();
             entity.Property(i => i.Category).HasMaxLength(50);
+            entity.Property(i => i.PreferredStore).HasMaxLength(50);
         });
 
         // RecipeIngredient (bridge table)
@@ -98,6 +99,7 @@ public class RecipeDbContext : DbContext
             entity.Property(i => i.Unit).HasMaxLength(20);
             entity.Property(i => i.Notes).HasMaxLength(500);
             entity.Property(i => i.RecipeSources).HasMaxLength(1000);
+            entity.Property(i => i.Store).HasMaxLength(50);
 
             entity.HasOne(i => i.ShoppingList)
                 .WithMany(l => l.Items)

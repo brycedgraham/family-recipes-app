@@ -102,7 +102,7 @@ public class RecipeRepository : IRecipeRepository
         return category;
     }
 
-    public async Task<Ingredient> FindOrCreateIngredientAsync(string name)
+    public async Task<Ingredient> FindOrCreateIngredientAsync(string name, string? notes = null)
     {
         var trimmed = name.Trim();
         var normalized = IngredientText.NormalizeName(trimmed);
@@ -111,12 +111,24 @@ public class RecipeRepository : IRecipeRepository
         var existing = await _context.Ingredients.FirstOrDefaultAsync(i => i.NormalizedName == normalized);
         if (existing is not null)
         {
-            // Backfill the category hint for rows seeded before classifier support.
+            // Backfill hints for rows seeded before classifier / store / pantry support.
+            var changed = false;
             if (string.IsNullOrEmpty(existing.Category))
             {
                 existing.Category = IngredientCategoryClassifier.GuessCategory(normalized);
-                await _context.SaveChangesAsync();
+                changed = true;
             }
+            if (existing.PreferredStore is null)
+            {
+                existing.PreferredStore = IngredientDefaults.DetectPreferredStore(existing.Name, notes);
+                changed = true;
+            }
+            if (!existing.IsPantryStaple && IngredientDefaults.IsPantryStaple(normalized))
+            {
+                existing.IsPantryStaple = true;
+                changed = true;
+            }
+            if (changed) await _context.SaveChangesAsync();
             return existing;
         }
 
@@ -125,9 +137,25 @@ public class RecipeRepository : IRecipeRepository
             Name = trimmed,
             NormalizedName = normalized,
             Category = IngredientCategoryClassifier.GuessCategory(normalized),
+            PreferredStore = IngredientDefaults.DetectPreferredStore(trimmed, notes),
+            IsPantryStaple = IngredientDefaults.IsPantryStaple(normalized),
         };
         _context.Ingredients.Add(ingredient);
         await _context.SaveChangesAsync();
         return ingredient;
+    }
+
+    public async Task UpdateIngredientPreferencesAsync(Guid? ingredientId, string normalizedName, string? store, bool storeTouched, bool? isPantryStaple)
+    {
+        var ingredient = ingredientId is { } id
+            ? await _context.Ingredients.FirstOrDefaultAsync(i => i.Id == id)
+            : null;
+        if (ingredient is null && !string.IsNullOrWhiteSpace(normalizedName))
+            ingredient = await _context.Ingredients.FirstOrDefaultAsync(i => i.NormalizedName == normalizedName);
+        if (ingredient is null) return; // standalone manual item with no catalog match
+
+        if (storeTouched) ingredient.PreferredStore = string.IsNullOrWhiteSpace(store) ? null : store.Trim();
+        if (isPantryStaple.HasValue) ingredient.IsPantryStaple = isPantryStaple.Value;
+        await _context.SaveChangesAsync();
     }
 }

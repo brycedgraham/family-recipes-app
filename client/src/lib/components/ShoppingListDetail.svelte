@@ -6,8 +6,9 @@
     patchShoppingListItem,
     clearCheckedShoppingItems,
     deleteShoppingListItem,
+    fetchStores,
   } from '#lib/api.js';
-  import { formatQuantity } from '#lib/format.js';
+  import ShoppingListItemRow from './ShoppingListItemRow.svelte';
 
   let { listId = null, sharedToken = null, readOnly = false } = $props();
 
@@ -16,6 +17,10 @@
   let rawText = $state('');
   let busy = $state(false);
   let copied = $state(false);
+  let stores = $state(['WinCo', 'Costco']);
+  // 'all' | 'unassigned' | a store name
+  let storeFilter = $state('all');
+  let pantryOpen = $state(true);
 
   $effect(() => {
     let cancelled = false;
@@ -29,11 +34,37 @@
     return () => { cancelled = true; };
   });
 
+  $effect(() => {
+    let cancelled = false;
+    fetchStores()
+      .then(data => { if (!cancelled && Array.isArray(data)) stores = data; })
+      .catch(() => {}); // API without /stores: keep the default pair
+    return () => { cancelled = true; };
+  });
+
+  // Tabs also show any store already present on items but missing from the fetched list.
+  let displayStores = $derived.by(() => {
+    const itemStores = new Set((list?.items ?? []).map(i => i.store).filter(Boolean));
+    const extras = [...itemStores]
+      .filter(s => !stores.some(x => x.toLowerCase() === s.toLowerCase()))
+      .sort((a, b) => a.localeCompare(b));
+    return [...stores, ...extras];
+  });
+
+  function matchesStore(item) {
+    if (storeFilter === 'all') return true;
+    if (storeFilter === 'unassigned') return !item.store;
+    return item.store === storeFilter;
+  }
+
+  // Unchecked pantry staples are pulled out of the aisle groups into the Pantry Check section.
+  let pantryItems = $derived(list ? list.items.filter(i => i.isPantryStaple && !i.isChecked && matchesStore(i)) : []);
+  let mainItems = $derived(list ? list.items.filter(i => !(i.isPantryStaple && !i.isChecked) && matchesStore(i)) : []);
+
   // Server already orders items by category, then checked, then name — group preserving that order.
   let groups = $derived.by(() => {
-    if (!list) return [];
     const m = new Map();
-    for (const item of list.items) {
+    for (const item of mainItems) {
       const key = item.category || 'Other';
       if (!m.has(key)) m.set(key, []);
       m.get(key).push(item);
@@ -41,15 +72,31 @@
     return [...m.entries()];
   });
 
+  let storeCounts = $derived.by(() => {
+    const counts = Object.fromEntries(displayStores.map(s => [s, 0]));
+    let unassigned = 0;
+    for (const item of list?.items ?? []) {
+      if (!item.store) unassigned++;
+      else counts[item.store] = (counts[item.store] ?? 0) + 1;
+    }
+    return { ...counts, unassigned };
+  });
+
   let checkedCount = $derived(list ? list.items.filter(i => i.isChecked).length : 0);
   let shareUrl = $derived(list ? `${window.location.origin}/shopping-lists/shared/${list.shareToken}` : '');
+
+  function setItem(id, patch) {
+    list = { ...list, items: list.items.map(i => (i.id === id ? { ...i, ...patch } : i)) };
+  }
 
   async function handleQuickAdd(e) {
     e.preventDefault();
     if (!rawText.trim()) return;
     busy = true;
     try {
-      list = await addShoppingListItem(listId, rawText);
+      // When a specific store tab is active, newly quick-added items default to that store.
+      const store = storeFilter !== 'all' && storeFilter !== 'unassigned' ? storeFilter : null;
+      list = await addShoppingListItem(listId, rawText, store);
       rawText = '';
     } catch (err) {
       alert(`Add failed: ${err.message}`);
@@ -61,11 +108,42 @@
   // Optimistic toggle: flip locally, sync with the server, roll back on failure.
   async function handleToggle(item) {
     const next = !item.isChecked;
-    list = { ...list, items: list.items.map(i => (i.id === item.id ? { ...i, isChecked: next } : i)) };
+    setItem(item.id, { isChecked: next });
     try {
       list = await patchShoppingListItem(listId, item.id, { isChecked: next });
     } catch (err) {
-      list = { ...list, items: list.items.map(i => (i.id === item.id ? { ...i, isChecked: !next } : i)) };
+      setItem(item.id, { isChecked: !next });
+      alert(`Update failed: ${err.message}`);
+    }
+  }
+
+  // One tap cycles unassigned → each known store → back to unassigned.
+  function nextStore(current) {
+    const cycle = [null, ...displayStores];
+    const idx = current ? cycle.indexOf(current) : 0;
+    return cycle[(idx + 1) % cycle.length];
+  }
+
+  async function handleCycleStore(item) {
+    const next = nextStore(item.store);
+    setItem(item.id, { store: next });
+    try {
+      // "" clears on the wire (JSON null would mean "not sent"). The server also remembers this
+      // ingredient's default store for future weekly lists.
+      list = await patchShoppingListItem(listId, item.id, { store: next ?? '' });
+    } catch (err) {
+      setItem(item.id, { store: item.store });
+      alert(`Update failed: ${err.message}`);
+    }
+  }
+
+  async function handleTogglePantry(item) {
+    const next = !item.isPantryStaple;
+    setItem(item.id, { isPantryStaple: next });
+    try {
+      list = await patchShoppingListItem(listId, item.id, { isPantryStaple: next });
+    } catch (err) {
+      setItem(item.id, { isPantryStaple: !next });
       alert(`Update failed: ${err.message}`);
     }
   }
@@ -102,10 +180,6 @@
       window.prompt('Copy this share link:', shareUrl);
     }
   }
-
-  function recipeSourceBadges(item) {
-    return (item.recipeSources ?? '').split(',').map(s => s.trim()).filter(Boolean);
-  }
 </script>
 
 {#if notFound}
@@ -136,31 +210,68 @@
       </form>
     {/if}
 
+    <div class="sl-storebar">
+      <button type="button" class:active={storeFilter === 'all'} onclick={() => (storeFilter = 'all')}>
+        All ({list.items.length})
+      </button>
+      {#each displayStores as store (store)}
+        <button type="button" class:active={storeFilter === store} onclick={() => (storeFilter = store)}>
+          {store} ({storeCounts[store] ?? 0})
+        </button>
+      {/each}
+      <button type="button" class:active={storeFilter === 'unassigned'} onclick={() => (storeFilter = 'unassigned')}>
+        Any / Unassigned ({storeCounts.unassigned})
+      </button>
+    </div>
+
     {#each groups as [category, items] (category)}
       <section class="sl-group">
         <h2>{category} <span class="sl-count">{items.length}</span></h2>
         <ul>
           {#each items as item (item.id)}
-            <li class="sl-item" class:checked={item.isChecked}>
-              <input
-                type="checkbox"
-                checked={item.isChecked}
-                disabled={readOnly || busy}
-                onchange={() => handleToggle(item)}
-              />
-              <span class="sl-qty">{formatQuantity(item.quantity, item.unit)}</span>
-              <span class="sl-name">{item.name}</span>
-              {#if item.notes}<span class="sl-notes">{item.notes}</span>{/if}
-              {#each recipeSourceBadges(item) as src (src)}
-                <span class="sl-badge">from {src}</span>
-              {/each}
-              {#if !readOnly}
-                <button class="sl-del" title="Remove item" disabled={busy} onclick={() => handleDeleteItem(item)}>&times;</button>
-              {/if}
-            </li>
+            <ShoppingListItemRow
+              item={item}
+              readOnly={readOnly}
+              busy={busy}
+              onToggle={handleToggle}
+              onDelete={handleDeleteItem}
+              onCycleStore={handleCycleStore}
+              onTogglePantry={handleTogglePantry}
+            />
           {/each}
         </ul>
       </section>
     {/each}
+
+    {#if pantryItems.length > 0}
+      <section class="sl-group sl-pantry">
+        <h2>
+          <button type="button" class="sl-pantry-toggle" onclick={() => (pantryOpen = !pantryOpen)}>
+            {pantryOpen ? '▾' : '▸'} Pantry Check — Already Have? <span class="sl-count">{pantryItems.length}</span>
+          </button>
+        </h2>
+        {#if pantryOpen}
+          <ul>
+            {#each pantryItems as item (item.id)}
+              <ShoppingListItemRow
+                item={item}
+                readOnly={readOnly}
+                busy={busy}
+                onToggle={handleToggle}
+                onDelete={handleDeleteItem}
+                onCycleStore={handleCycleStore}
+                onTogglePantry={handleTogglePantry}
+              />
+            {/each}
+          </ul>
+        {/if}
+      </section>
+    {/if}
+
+    {#if mainItems.length === 0 && pantryItems.length === 0}
+      <p class="sl-empty">
+        No {storeFilter === 'all' ? '' : storeFilter === 'unassigned' ? 'unassigned' : storeFilter + ' '}items on this list.
+      </p>
+    {/if}
   </div>
 {/if}

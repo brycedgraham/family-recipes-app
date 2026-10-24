@@ -23,14 +23,16 @@ public static class ShoppingListAggregator
         foreach (var ri in ingredients)
         {
             decimal? qty = ri.Quantity.HasValue ? ri.Quantity.Value * multiplier : null;
-            MergeLine(list, ri.Ingredient.Name, ri.Ingredient.Category, qty, ri.Unit, ri.Notes, recipeTitle);
+            MergeLine(list, ri.Ingredient.Name, ri.Ingredient.Category, qty, ri.Unit, ri.Notes, recipeTitle,
+                ingredientId: ri.Ingredient.Id, preferredStore: ri.Ingredient.PreferredStore, isPantryStaple: ri.Ingredient.IsPantryStaple);
         }
     }
 
     /// <summary>Merges a single manual line (already parsed via IngredientText + classifier) into the list.</summary>
-    public static void AddManualItem(ShoppingList list, string name, string category, decimal? quantity, string? unit, string? notes)
+    public static void AddManualItem(ShoppingList list, string name, string category, decimal? quantity, string? unit, string? notes,
+        Guid? ingredientId = null, string? preferredStore = null, bool isPantryStaple = false)
     {
-        MergeLine(list, name, category, quantity, unit, notes, recipeTitle: null);
+        MergeLine(list, name, category, quantity, unit, notes, recipeTitle: null, ingredientId, preferredStore, isPantryStaple);
     }
 
     /// <summary>
@@ -49,7 +51,8 @@ public static class ShoppingListAggregator
             ordered[idx].SortOrder = idx;
     }
 
-    private static void MergeLine(ShoppingList list, string name, string category, decimal? quantity, string? unit, string? notes, string? recipeTitle)
+    private static void MergeLine(ShoppingList list, string name, string? category, decimal? quantity, string? unit, string? notes, string? recipeTitle,
+        Guid? ingredientId = null, string? preferredStore = null, bool isPantryStaple = false)
     {
         var key = (name.ToLowerInvariant(), UnitGroup(unit));
         var existing = list.Items.FirstOrDefault(i => i.NormalizedName == key.Item1 && UnitGroup(i.Unit) == key.Item2);
@@ -64,6 +67,9 @@ public static class ShoppingListAggregator
                 Unit = unit,
                 Notes = notes,
                 RecipeSources = recipeTitle,
+                IngredientId = ingredientId,
+                Store = preferredStore,
+                IsPantryStaple = isPantryStaple,
             });
             return;
         }
@@ -73,6 +79,12 @@ public static class ShoppingListAggregator
         existing.Unit = u;
         existing.Notes = MergeNotes(existing.Notes, notes);
         if (recipeTitle is not null) existing.RecipeSources = AddSource(existing.RecipeSources, recipeTitle);
+
+        // Lines for the same ingredient merge regardless of store: a user-assigned store on the existing
+        // line wins; otherwise inherit the ingredient's preferred store. Pantry flag only ever turns on.
+        if (existing.IngredientId is null) existing.IngredientId = ingredientId;
+        if (existing.Store is null && preferredStore is not null) existing.Store = preferredStore;
+        if (isPantryStaple) existing.IsPantryStaple = true;
     }
 
     /// <summary>Unit group for merging: volume and weight each form one group; everything else groups by exact unit.</summary>

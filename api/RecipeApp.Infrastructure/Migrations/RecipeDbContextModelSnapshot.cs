@@ -50,6 +50,9 @@ namespace RecipeApp.Infrastructure.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("TEXT");
 
+                    b.Property<bool>("IsPantryStaple")
+                        .HasColumnType("INTEGER");
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(200)
@@ -58,6 +61,10 @@ namespace RecipeApp.Infrastructure.Migrations
                     b.Property<string>("NormalizedName")
                         .IsRequired()
                         .HasMaxLength(200)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("PreferredStore")
+                        .HasMaxLength(50)
                         .HasColumnType("TEXT");
 
                     b.HasKey("Id");
@@ -318,6 +325,9 @@ namespace RecipeApp.Infrastructure.Migrations
                     b.Property<bool>("IsChecked")
                         .HasColumnType("INTEGER");
 
+                    b.Property<bool>("IsPantryStaple")
+                        .HasColumnType("INTEGER");
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(200)
@@ -340,6 +350,10 @@ namespace RecipeApp.Infrastructure.Migrations
 
                     b.Property<int>("SortOrder")
                         .HasColumnType("INTEGER");
+
+                    b.Property<string>("Store")
+                        .HasMaxLength(50)
+                        .HasColumnType("TEXT");
 
                     b.Property<string>("Unit")
                         .HasMaxLength(20)

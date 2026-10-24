@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using RecipeApp.Core;
 using RecipeApp.Core.Interfaces;
 using RecipeApp.Core.Models;
 using RecipeApp.Infrastructure.Data;
@@ -67,5 +68,31 @@ public class ShoppingListRepository : IShoppingListRepository
         _context.ShoppingLists.Remove(list);
         await _context.SaveChangesAsync();
         return true;
+    }
+
+    public async Task<IReadOnlyList<string>> GetKnownStoresAsync(CancellationToken cancellationToken = default)
+    {
+        var fromItems = await _context.ShoppingListItems
+            .Where(i => i.Store != null)
+            .Select(i => i.Store!)
+            .Distinct()
+            .ToListAsync(cancellationToken);
+        var fromIngredients = await _context.Ingredients
+            .Where(i => i.PreferredStore != null)
+            .Select(i => i.PreferredStore!)
+            .Distinct()
+            .ToListAsync(cancellationToken);
+
+        // Default stores first (in their canonical order), then any custom names, alphabetically.
+        var result = IngredientDefaults.DefaultStores.ToList();
+        foreach (var name in fromItems.Concat(fromIngredients)
+                     .Where(s => !string.IsNullOrWhiteSpace(s))
+                     .Select(s => s.Trim())
+                     .Distinct(StringComparer.OrdinalIgnoreCase)
+                     .OrderBy(s => s, StringComparer.OrdinalIgnoreCase))
+        {
+            if (!result.Contains(name, StringComparer.OrdinalIgnoreCase)) result.Add(name);
+        }
+        return result;
     }
 }

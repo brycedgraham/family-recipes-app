@@ -5,8 +5,8 @@
 > older ticket report, this file wins. Per-repo conventions, layer rules, Svelte 5 runes rules,
 > and commands live in `AGENTS.md` — read that first (see the cold-start protocol below).
 
-**Status: 2026-10-24.** Deliverables 1–6 complete and verified; next work is **Deliverable 7**
-(multi-store routing + pantry staples). The app runs as one .NET process on
+**Status: 2026-10-24.** Deliverables 1–7 complete and verified; next work is **Deliverable 8**
+(one-click web recipe URL importer). The app runs as one .NET process on
 `http://0.0.0.0:5051` serving the SPA, API, SQLite, and recipe photos.
 
 ---
@@ -95,24 +95,19 @@ dotnet run --project api/RecipeApp -- seed        # idempotent import of recipes
       `start.sh` single-port hosting with explicit `UseRouting()` middleware ordering, and
       `manifest.webmanifest` + icons. → `TICKET_5_REPORT.md`.
 
+- [x] **Deliverable 7: Multi-Store Routing (WinCo / Costco) & Pantry Staples** — `Ingredient.PreferredStore`
+      + `IsPantryStaple`, `ShoppingListItem.Store` (migration `AddStoreAndPantrySupport`); seed/backfill
+      pantry-staple defaults and `(winco)`/`costco`/`kirkland` store hints; list items inherit the
+      ingredient's preferred store on aggregation and quick-add; `PATCH .../items/{id}` with `store` or
+      `isPantryStaple` **persists back to the ingredient catalog** so future weekly lists remember it;
+      `GET /api/stores`; Svelte 5 UI: store filter tabs with counts, one-tap store pills, quick-add that
+      defaults to the active store tab, and a collapsible "Pantry Check — Already Have?" section. →
+      `TICKET_7_REPORT.md`.
+
 ---
 
 ## 4. Upcoming Deliverables Backlog
 
-- [ ] **Deliverable 7: Multi-Store Routing (WinCo / Costco) & Pantry Staples**
-  - [ ] Add `PreferredStore` (`string?`, e.g. `"WinCo"`, `"Costco"`) and `IsPantryStaple` (`bool`) to
-        `Ingredient`, plus `Store` (`string?`) to `ShoppingListItem`. (New EF Core migration.)
-  - [ ] Seed sensible defaults (e.g., ingredients mentioning `(winco)` → `"WinCo"`; common pantry
-        staples like `water`, `warm water`, `salt`, `black pepper`, `cooking spray` flagged
-        `IsPantryStaple = true`).
-  - [ ] When `ShoppingListAggregator` or `POST /api/shopping-lists/{id}/items` creates items, inherit
-        `Store` from `Ingredient.PreferredStore`.
-  - [ ] When `PATCH /api/shopping-lists/{id}/items/{itemId}` updates an item's `Store` (or
-        `rememberStore: true`), persist that choice back to `Ingredient.PreferredStore` so future
-        weekly meal-plan lists automatically route that ingredient to the preferred store.
-  - [ ] Add Store Filter Tabs (`All`, `WinCo`, `Costco`, `Unassigned`) at the top of
-        `ShoppingListDetail.svelte`, one-tap store-assignment pills on each item, and a collapsible
-        `"Pantry Check (Already Have?)"` section for pantry staples.
 - [ ] **Deliverable 8: One-Click Web Recipe URL Importer**
   - [ ] `POST /api/recipes/import-url` scraping `schema.org/Recipe` JSON-LD + downloading the hero
         photo into `data/images/{id}/`, wired to an "Import from URL" modal in SvelteKit.

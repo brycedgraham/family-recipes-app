@@ -10,4 +10,6 @@ public interface IShoppingListRepository
     Task<ShoppingList> AddAsync(ShoppingList list);
     Task<ShoppingList> UpdateAsync(ShoppingList list);
     Task<bool> DeleteAsync(Guid id);
+    /// <summary>Store names in use: the default stores first, then any custom names found on list items or ingredients.</summary>
+    Task<IReadOnlyList<string>> GetKnownStoresAsync(CancellationToken cancellationToken = default);
 }

@@ -14,7 +14,9 @@ public record ShoppingListItemDto(
     string? Notes,
     string? RecipeSources,
     bool IsChecked,
-    int SortOrder);
+    int SortOrder,
+    string? Store,
+    bool IsPantryStaple);
 
 public record ShoppingListSummaryDto(
     Guid Id,
@@ -34,10 +36,10 @@ public record ShoppingListDto(
 
 // Requests
 public record CreateShoppingListRequest(string? Name, List<RawTextItem>? Items);
-public record RawTextItem(string RawText);
+public record RawTextItem(string RawText, string? Store = null);
 public record AddRecipesRequest(List<RecipeMultiplier> Items);
 public record RecipeMultiplier(Guid RecipeId, decimal Multiplier = 1m);
-public record PatchItemRequest(bool? IsChecked, string? Name, string? Category, decimal? Quantity, string? Unit);
+public record PatchItemRequest(bool? IsChecked, string? Name, string? Category, decimal? Quantity, string? Unit, string? Store = null, bool? IsPantryStaple = null);
 
 public static class ShoppingListMapper
 {
@@ -73,5 +75,7 @@ public static class ShoppingListMapper
         item.Notes,
         item.RecipeSources,
         item.IsChecked,
-        item.SortOrder);
+        item.SortOrder,
+        item.Store,
+        item.IsPantryStaple);
 }

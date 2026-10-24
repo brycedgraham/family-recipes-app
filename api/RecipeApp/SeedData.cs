@@ -29,6 +29,8 @@ public static class SeedData
 
         await using var db = new RecipeDbContext(options);
         await db.Database.MigrateAsync();
+        // Backfill store / pantry-staple defaults for ingredients seeded before that support existed.
+        await IngredientBackfill.ApplyDefaultsAsync(db);
 
         var repo = new RecipeRepository(db);
         var existingTitles = (await db.Recipes.Select(r => r.Title).ToListAsync()).ToHashSet(StringComparer.Ordinal);
@@ -78,7 +80,7 @@ public static class SeedData
                     var cleaned = IngredientText.CleanLine(line);
                     if (cleaned is null) continue;
                     var (quantity, unit, name, notes) = IngredientText.SplitLine(cleaned);
-                    var ingredient = await repo.FindOrCreateIngredientAsync(name.Length > 0 ? name : cleaned);
+                    var ingredient = await repo.FindOrCreateIngredientAsync(name.Length > 0 ? name : cleaned, string.IsNullOrWhiteSpace(notes) ? null : notes);
                     recipe.RecipeIngredients.Add(new RecipeIngredient
                     {
                         Quantity = quantity,

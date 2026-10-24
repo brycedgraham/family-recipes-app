@@ -856,6 +856,110 @@ label {
   padding: 0 4px;
 }
 
+/* Store filter tabs (Ticket 7) */
+.sl-storebar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 16px;
+}
+
+.sl-storebar button {
+  padding: 4px 12px;
+  border: 1px solid var(--border-input);
+  border-radius: 14px;
+  background: var(--bg-surface);
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+.sl-storebar button:hover {
+  background: var(--hover-bg);
+}
+
+.sl-storebar button.active {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: #fff;
+  font-weight: 600;
+}
+
+/* One-tap store pill on each item */
+.sl-store-pill {
+  padding: 1px 8px;
+  border: 1px dashed var(--border-input);
+  border-radius: 10px;
+  background: none;
+  color: var(--text-muted);
+  font-size: 0.75rem;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.sl-store-pill:hover {
+  border-style: solid;
+  border-color: var(--primary);
+  color: var(--primary);
+}
+
+.sl-store-pill.assigned {
+  border-style: solid;
+  border-color: var(--primary);
+  color: var(--primary);
+  font-weight: 600;
+}
+
+/* Pantry staple toggle on each item */
+.sl-pantry-btn {
+  padding: 1px 8px;
+  border: 1px solid var(--border-subtle);
+  border-radius: 10px;
+  background: none;
+  color: var(--text-muted);
+  font-size: 0.75rem;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.sl-pantry-btn:hover {
+  border-color: var(--primary);
+  color: var(--primary);
+}
+
+.sl-pantry-btn.on {
+  background: var(--hover-bg);
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+/* Collapsible pantry check section */
+.sl-pantry {
+  border-top: 2px solid var(--border-subtle);
+  padding-top: 10px;
+}
+
+.sl-pantry-toggle {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 6px;
+  background: none;
+  border: none;
+  padding: 0;
+  font: inherit;
+  color: var(--text-heading);
+  cursor: pointer;
+}
+
+.sl-pantry-toggle:hover {
+  color: var(--primary);
+}
+
+.sl-empty {
+  color: var(--text-muted);
+  font-style: italic;
+}
+
 /* Recipe detail scale row */
 .recipe-scale-row {
   display: flex;

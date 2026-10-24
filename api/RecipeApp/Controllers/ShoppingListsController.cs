@@ -52,7 +52,7 @@ public class ShoppingListsController : ControllerBase
 
         foreach (var item in request?.Items ?? [])
         {
-            AddParsedLine(list, item.RawText);
+            await AddParsedLineAsync(list, item.RawText, item.Store);
         }
 
         ShoppingListAggregator.Resort(list);
@@ -86,7 +86,7 @@ public class ShoppingListsController : ControllerBase
         var list = await _lists.GetByIdAsync(id, cancellationToken);
         if (list is null) return NotFound();
 
-        AddParsedLine(list, request.RawText);
+        await AddParsedLineAsync(list, request.RawText, request.Store);
         ShoppingListAggregator.Resort(list);
         await _lists.UpdateAsync(list);
         return Ok(ShoppingListMapper.ToDto(list));
@@ -107,8 +107,20 @@ public class ShoppingListsController : ControllerBase
         if (request.Quantity.HasValue) item.Quantity = request.Quantity;
         if (request.Unit is not null) item.Unit = request.Unit.Trim();
 
+        // Store: absent = untouched, ""/null = clear. Pantry flag: absent = untouched.
+        var storeTouched = request.Store is not null;
+        if (storeTouched) item.Store = string.IsNullOrWhiteSpace(request.Store) ? null : request.Store.Trim();
+        var pantryTouched = request.IsPantryStaple.HasValue;
+        if (request.IsPantryStaple is bool pantryValue) item.IsPantryStaple = pantryValue;
+
         ShoppingListAggregator.Resort(list);
         await _lists.UpdateAsync(list);
+
+        // Persistent store memory: mirror the item's choice back to the shared ingredient catalog so
+        // future weekly lists route this ingredient to the same store / pantry flag automatically.
+        if (storeTouched || pantryTouched)
+            await _recipes.UpdateIngredientPreferencesAsync(item.IngredientId, item.NormalizedName, item.Store, storeTouched, request.IsPantryStaple);
+
         return Ok(ShoppingListMapper.ToDto(list));
     }
 
@@ -147,12 +159,20 @@ public class ShoppingListsController : ControllerBase
         return (await _lists.DeleteAsync(id)) ? NoContent() : NotFound();
     }
 
-    /// <summary>Parses a raw line and merges it into the list with a guessed aisle category.</summary>
-    private static void AddParsedLine(ShoppingList list, string? rawText)
+    /// <summary>
+    /// Parses a raw line and merges it into the list with a guessed aisle category. The line is linked to the
+    /// shared ingredient catalog so store / pantry choices can be remembered; an explicit <paramref name="store"/>
+    /// (e.g. from the active store filter tab) wins over the catalog's preferred store.
+    /// </summary>
+    private async Task AddParsedLineAsync(ShoppingList list, string? rawText, string? store)
     {
         var (quantity, unit, name, notes) = IngredientText.SplitLine(rawText);
         if (string.IsNullOrWhiteSpace(name)) return;
-        ShoppingListAggregator.AddManualItem(list, name, IngredientCategoryClassifier.GuessCategory(name.ToLowerInvariant()), quantity, unit, notes);
+        var cleanNotes = string.IsNullOrWhiteSpace(notes) ? null : notes;
+        var ingredient = await _recipes.FindOrCreateIngredientAsync(name, cleanNotes);
+        var explicitStore = string.IsNullOrWhiteSpace(store) ? null : store.Trim();
+        ShoppingListAggregator.AddManualItem(list, name, IngredientCategoryClassifier.GuessCategory(name.ToLowerInvariant()), quantity, unit, cleanNotes,
+            ingredient.Id, explicitStore ?? ingredient.PreferredStore, ingredient.IsPantryStaple);
     }
 
     private static bool SourceListContains(string? sources, string title) =>

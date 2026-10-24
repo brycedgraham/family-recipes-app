@@ -46,7 +46,10 @@ var app = builder.Build();
 // Create the SQLite database on first run if it does not exist yet (same behavior as the seed command).
 using (var scope = app.Services.CreateScope())
 {
-    await scope.ServiceProvider.GetRequiredService<RecipeDbContext>().Database.MigrateAsync();
+    var db = scope.ServiceProvider.GetRequiredService<RecipeDbContext>();
+    await db.Database.MigrateAsync();
+    // Backfill store / pantry-staple defaults for ingredients seeded before that support existed.
+    await RecipeApp.Infrastructure.Data.IngredientBackfill.ApplyDefaultsAsync(db);
 }
 if (app.Environment.IsDevelopment())
 {

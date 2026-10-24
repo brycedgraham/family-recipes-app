@@ -37,6 +37,11 @@ export function fetchCategories() {
   return request('/categories');
 }
 
+// Store names shopping lines can be routed to (defaults first, then custom stores in use).
+export function fetchStores() {
+  return request('/stores');
+}
+
 export function createRecipe(payload) {
   return request('/recipes', { method: 'POST', body: JSON.stringify(payload) });
 }
@@ -93,8 +98,8 @@ export function addRecipesToShoppingList(id, items) {
   return request(`/shopping-lists/${id}/add-recipes`, { method: 'POST', body: JSON.stringify({ items }) });
 }
 
-export function addShoppingListItem(id, rawText) {
-  return request(`/shopping-lists/${id}/items`, { method: 'POST', body: JSON.stringify({ rawText }) });
+export function addShoppingListItem(id, rawText, store = null) {
+  return request(`/shopping-lists/${id}/items`, { method: 'POST', body: JSON.stringify({ rawText, store }) });
 }
 
 export function patchShoppingListItem(id, itemId, payload) {

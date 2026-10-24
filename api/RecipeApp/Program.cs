@@ -41,6 +41,14 @@ builder.Services.AddScoped<IMealPlanRepository, MealPlanRepository>();
 var imagesDirectory = Path.Combine(SqliteDatabase.DataDirectory ?? throw new InvalidOperationException("Database not resolved."), "images");
 builder.Services.AddSingleton(new ImageStore(imagesDirectory));
 
+// Web recipe importer: browser-like user agent + bounded timeout for fetching pages and hero photos.
+builder.Services.AddHttpClient<RecipeUrlImporter>(client =>
+{
+    client.Timeout = TimeSpan.FromSeconds(20);
+    client.DefaultRequestHeaders.UserAgent.ParseAdd("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36");
+    client.DefaultRequestHeaders.Accept.ParseAdd("text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8");
+});
+
 var app = builder.Build();
 
 // Create the SQLite database on first run if it does not exist yet (same behavior as the seed command).

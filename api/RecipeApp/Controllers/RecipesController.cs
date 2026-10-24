@@ -13,11 +13,13 @@ public class RecipesController : ControllerBase
 {
     private readonly IRecipeRepository _recipes;
     private readonly ImageStore _images;
+    private readonly RecipeUrlImporter _importer;
 
-    public RecipesController(IRecipeRepository recipes, ImageStore images)
+    public RecipesController(IRecipeRepository recipes, ImageStore images, RecipeUrlImporter importer)
     {
         _recipes = recipes;
         _images = images;
+        _importer = importer;
     }
 
     [HttpGet]
@@ -93,6 +95,92 @@ public class RecipesController : ControllerBase
 
         var updated = await _recipes.UpdateAsync(recipe);
         return Ok(RecipeMapper.ToDto(updated));
+    }
+
+    /// <summary>Imports a recipe from the schema.org/Recipe JSON-LD embedded in an arbitrary web page.</summary>
+    [HttpPost("import-url")]
+    public async Task<ActionResult<RecipeDto>> ImportFromUrl([FromBody] RecipeImportRequest request, CancellationToken cancellationToken)
+    {
+        if (string.IsNullOrWhiteSpace(request?.Url))
+            return BadRequest("Provide the recipe page URL as { \"url\": \"https://...\" }.");
+
+        ImportedRecipe imported;
+        try
+        {
+            imported = await _importer.ImportAsync(request.Url.Trim(), cancellationToken);
+        }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+            throw; // the request itself was aborted
+        }
+        catch (RecipeImportException ex)
+        {
+            return BadRequest(ex.Message);
+        }
+        catch (Exception ex) // network failures, DNS errors, timeouts…
+        {
+            return BadRequest($"Could not fetch that URL: {ex.Message}");
+        }
+
+        var recipe = new Recipe
+        {
+            Title = imported.Title,
+            Description = imported.Description,
+            Servings = imported.Servings,
+            PrepTimeMinutes = imported.PrepTimeMinutes,
+            CookTimeMinutes = imported.CookTimeMinutes,
+            Cuisine = imported.Cuisine,
+        };
+
+        foreach (var categoryName in imported.Categories)
+        {
+            var category = await _recipes.FindOrCreateCategoryAsync(categoryName);
+            if (!recipe.Categories.Any(c => c.Id == category.Id))
+                recipe.Categories.Add(category);
+        }
+
+        foreach (var line in imported.Ingredients)
+        {
+            // FindOrCreateIngredientAsync applies the aisle classifier, store hints and pantry-staple defaults,
+            // so imported ingredients inherit the same normalization as seeded ones.
+            var ingredient = await _recipes.FindOrCreateIngredientAsync(line.Name, line.Notes);
+            if (recipe.RecipeIngredients.Any(ri => ri.IngredientId == ingredient.Id)) continue; // duplicate line
+            recipe.RecipeIngredients.Add(new RecipeIngredient
+            {
+                Quantity = line.Quantity,
+                Unit = line.Unit,
+                IngredientId = ingredient.Id,
+            });
+        }
+
+        var stepNumber = 1;
+        foreach (var step in imported.Steps)
+            recipe.Steps.Add(new RecipeStep { StepNumber = stepNumber++, Text = step });
+
+        var created = await _recipes.AddAsync(recipe);
+
+        // Best-effort hero photo: a failed download must not fail the import.
+        if (imported.ImageUrl is not null)
+        {
+            try
+            {
+                var bytes = await _importer.DownloadImageAsync(imported.ImageUrl, cancellationToken);
+                recipe.Images.Add(new RecipeImage
+                {
+                    RecipeId = created.Id,
+                    FileName = _images.SaveBytes(created.Id, bytes),
+                    SortOrder = 1,
+                    CreatedAt = DateTime.UtcNow,
+                });
+                await _recipes.UpdateAsync(recipe);
+            }
+            catch (Exception)
+            {
+                // Keep the recipe even when the photo could not be downloaded or validated.
+            }
+        }
+
+        return CreatedAtAction(nameof(GetById), new { id = created.Id }, RecipeMapper.ToDto(created));
     }
 
     /// <summary>Removes one photo (DB row + file on disk).</summary>

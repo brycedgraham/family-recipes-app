@@ -108,9 +108,60 @@
       planSaving = false;
     }
   }
+
+  // Cook mode (Ticket 8): screen wake lock, ingredient cross-off, active-step highlighting.
+  let cookMode = $state(false);
+  let awake = $state(false); // true while a screen wake lock is held
+  let checkedIngredients = $state(new Set());
+  let activeStep = $state(-1);
+  let wakeLock; // WakeLockSentinel handle (plain local, not reactive state)
+
+  async function requestWakeLock() {
+    if (!('wakeLock' in navigator)) return; // unsupported browser: cook mode still works without it
+    try {
+      wakeLock = await navigator.wakeLock.request('screen');
+      awake = true;
+      wakeLock.addEventListener('release', () => { awake = false; });
+    } catch {
+      awake = false; // request rejected (e.g. no user activation) — degrade gracefully
+    }
+  }
+
+  async function releaseWakeLock() {
+    try { await wakeLock?.release(); } catch { /* already released */ }
+    wakeLock = null;
+    awake = false;
+  }
+
+  function toggleCookMode() {
+    cookMode = !cookMode;
+    if (cookMode) requestWakeLock(); // called from a user gesture, as the API requires
+    else releaseWakeLock();
+  }
+
+  // While cook mode is on: re-acquire the lock whenever the tab becomes visible again
+  // (the browser drops it otherwise), and release it when cook mode ends or the component destroys.
+  $effect(() => {
+    if (!cookMode) return;
+    function onVisible() {
+      if (document.visibilityState === 'visible') requestWakeLock();
+    }
+    document.addEventListener('visibilitychange', onVisible);
+    return () => {
+      document.removeEventListener('visibilitychange', onVisible);
+      releaseWakeLock();
+    };
+  });
+
+  function toggleIngredient(index) {
+    const next = new Set(checkedIngredients);
+    if (next.has(index)) next.delete(index);
+    else next.add(index);
+    checkedIngredients = next;
+  }
 </script>
 
-<div class="RecipeDetail">
+<div class="RecipeDetail" class:cook-mode={cookMode}>
   <h1>{recipe.name}</h1>
 
   {#if imageUrls.length > 0}
@@ -142,6 +193,14 @@
     </button>
     <input bind:this={fileInput} type="file" accept="image/*" multiple hidden onchange={handleUpload} />
     {#if imgMsg}<span class="sl-added">{imgMsg}</span>{/if}
+  </div>
+
+  <div class="recipe-scale-row mb-2">
+    <button type="button" class="secondary" class:active={cookMode} onclick={toggleCookMode}>
+      {cookMode ? 'Exit Cook Mode' : 'Cook Mode'}
+    </button>
+    {#if awake}<span class="wake-badge">Screen Awake</span>{/if}
+    <button type="button" class="secondary" onclick={() => window.print()}>Print</button>
   </div>
 
   <p><strong>Description:</strong> {recipe.description}</p>
@@ -193,6 +252,16 @@
   {/if}
   {#if recipe.ingredients.length === 0}
     <p>No ingredients listed.</p>
+  {:else if cookMode}
+    <ul class="cook-ingredients">
+      {#each recipe.ingredients as ingredient, index (index)}
+        <li>
+          <button type="button" class:done={checkedIngredients.has(index)} onclick={() => toggleIngredient(index)}>
+            {[displayQty(ingredient), ingredient.name].filter(Boolean).join(' ')}
+          </button>
+        </li>
+      {/each}
+    </ul>
   {:else}
     <ul>
       {#each recipe.ingredients as ingredient, index (index)}
@@ -207,9 +276,15 @@
   {#if recipe.instructions.length === 0}
     <p>No instructions listed.</p>
   {:else}
-    <ol>
+    <ol class:cook-steps={cookMode}>
       {#each recipe.instructions as step, index (index)}
-        <li class="mb-1">{step}</li>
+        {#if cookMode}
+          <li>
+            <button type="button" class:active={activeStep === index} onclick={() => (activeStep = index)}>{step}</button>
+          </li>
+        {:else}
+          <li class="mb-1">{step}</li>
+        {/if}
       {/each}
     </ol>
   {/if}

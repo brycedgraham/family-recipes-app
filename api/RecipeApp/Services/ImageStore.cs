@@ -39,6 +39,39 @@ public sealed class ImageStore
         return fileName;
     }
 
+    /// <summary>Detects an image format from its magic bytes; null when the content is not a known image.</summary>
+    public static string? DetectImageExtension(byte[] data)
+    {
+        if (data.Length >= 3 && data[0] == 0xFF && data[1] == 0xD8 && data[2] == 0xFF) return ".jpg";
+        if (data.Length >= 4 && data[0] == 0x89 && data[1] == 0x50 && data[2] == 0x4E && data[3] == 0x47) return ".png";
+        if (data.Length >= 6 && StartsWith(data, GifMagic)) return ".gif";
+        if (data.Length >= 12 && StartsWith(data, RiffMagic) && StartsWith(data.AsSpan(8), WebpMagic)) return ".webp";
+        return null;
+    }
+
+    private static readonly byte[] GifMagic = { 0x47, 0x49, 0x46, 0x38 }; // "GIF8"
+    private static readonly byte[] RiffMagic = { 0x52, 0x49, 0x46, 0x46 }; // "RIFF"
+    private static readonly byte[] WebpMagic = { 0x57, 0x45, 0x42, 0x50 }; // "WEBP"
+
+    private static bool StartsWith(ReadOnlySpan<byte> data, byte[] magic) =>
+        data.Length >= magic.Length && data.Slice(0, magic.Length).SequenceEqual(magic);
+
+    /// <summary>Persists downloaded image bytes (magic-byte validated, ≤ 10 MB) and returns the stored file name.</summary>
+    public string SaveBytes(Guid recipeId, byte[] data)
+    {
+        if (data.Length == 0 || data.Length > MaxFileSizeBytes)
+            throw new InvalidDataException("Downloaded image is empty or larger than 10 MB.");
+        var extension = DetectImageExtension(data);
+        if (extension is null)
+            throw new InvalidDataException("Downloaded content is not a recognized image (jpg, png, webp or gif).");
+
+        var dir = RecipeDirectory(recipeId);
+        Directory.CreateDirectory(dir);
+        var fileName = Guid.NewGuid().ToString("N") + extension;
+        File.WriteAllBytes(Path.Combine(dir, fileName), data);
+        return fileName;
+    }
+
     /// <summary>Removes a single photo file (best effort — a missing file is not an error).</summary>
     public void DeleteFile(Guid recipeId, string fileName)
     {

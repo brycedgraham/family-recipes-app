@@ -5,8 +5,8 @@
 > older ticket report, this file wins. Per-repo conventions, layer rules, Svelte 5 runes rules,
 > and commands live in `AGENTS.md` — read that first (see the cold-start protocol below).
 
-**Status: 2026-10-24.** Deliverables 1–7 complete and verified; next work is **Deliverable 8**
-(one-click web recipe URL importer). The app runs as one .NET process on
+**Status: 2026-10-24.** Deliverables 1–9 complete and verified; next work is **Deliverable 10**
+(automated unit tests + backup script). The app runs as one .NET process on
 `http://0.0.0.0:5051` serving the SPA, API, SQLite, and recipe photos.
 
 ---
@@ -104,16 +104,26 @@ dotnet run --project api/RecipeApp -- seed        # idempotent import of recipes
       defaults to the active store tab, and a collapsible "Pantry Check — Already Have?" section. →
       `TICKET_7_REPORT.md`.
 
+- [x] **Deliverable 8: One-Click Web Recipe URL Importer** — `POST /api/recipes/import-url` fetches
+      any page and extracts its `schema.org/Recipe` JSON-LD (top-level node, arrays, `@graph`,
+      string-or-array `@type`), decodes HTML entities, parses ISO 8601 durations + `recipeYield`,
+      flattens `HowToStep`/`HowToSection` instructions, and runs every ingredient line through the
+      same `IngredientText.SplitLine` + category/store/pantry pipeline as seed — imported
+      ingredients dedupe against the catalog and inherit store preferences. Best-effort hero-photo
+      download (magic-byte validated, ≤ 10 MB) into `data/images/{id}/`. Client: "Import from URL"
+      modal on the home page (`ImportUrlModal.svelte`) that navigates straight to the new recipe;
+      clean 400s for unfetchable URLs / pages without Recipe JSON-LD. → `TICKET_8_REPORT.md`.
+- [x] **Deliverable 9: Hands-Free Cook Mode & Print Stylesheet** — "Cook Mode" toggle on
+      `RecipeDetail.svelte`: Screen Wake Lock (`navigator.wakeLock`) with graceful fallback,
+      re-acquire on tab visibility, release on toggle-off/destroy; larger counter-distance text;
+      tap-to-cross-off ingredients (local only) and tap-to-highlight the active step. "Print"
+      button + `@media print` CSS hiding nav, action rows, modals, and gallery chrome. →
+      `TICKET_8_REPORT.md`.
+
 ---
 
 ## 4. Upcoming Deliverables Backlog
 
-- [ ] **Deliverable 8: One-Click Web Recipe URL Importer**
-  - [ ] `POST /api/recipes/import-url` scraping `schema.org/Recipe` JSON-LD + downloading the hero
-        photo into `data/images/{id}/`, wired to an "Import from URL" modal in SvelteKit.
-- [ ] **Deliverable 9: Hands-Free Cook Mode & Print Stylesheet**
-  - [ ] Screen Wake Lock API toggle (`navigator.wakeLock`) on `RecipeDetail.svelte` + `@media print`
-        CSS.
 - [ ] **Deliverable 10: Automated Unit Tests (`RecipeApp.Tests`) & Backup Script**
   - [ ] xUnit test project for `RecipeApp.Core` + `backup.sh` archiving `data/recipes.db` and
         `data/images/`.

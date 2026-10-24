@@ -54,6 +54,11 @@ export function deleteRecipe(id) {
   return request(`/recipes/${id}`, { method: 'DELETE' });
 }
 
+// Import a recipe from the schema.org/Recipe JSON-LD embedded in an arbitrary web page.
+export function importRecipeFromUrl(url) {
+  return request('/recipes/import-url', { method: 'POST', body: JSON.stringify({ url }) });
+}
+
 // Recipe images (multipart; no JSON content-type so fetch sets the form boundary)
 export async function uploadRecipeImage(recipeId, file) {
   const form = new FormData();

@@ -1274,3 +1274,155 @@ label {
     grid-template-columns: 1fr;
   }
 }
+
+/* Import-from-URL modal (Ticket 8) */
+.import-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+}
+
+.import-overlay.hidden {
+  display: none;
+}
+
+.import-modal {
+  background: var(--bg-surface);
+  border-radius: 8px;
+  padding: 20px;
+  width: min(560px, 92vw);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.25);
+}
+
+.import-modal h2 {
+  font-size: 1.2rem;
+  margin-bottom: 6px;
+  color: var(--text-heading);
+}
+
+.import-hint {
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  margin-bottom: 12px;
+}
+
+.import-row {
+  display: flex;
+  gap: 8px;
+}
+
+.import-row input {
+  flex: 1;
+  padding: 9px 11px;
+  border: 1px solid var(--border-input);
+  border-radius: 6px;
+  background: var(--input-bg);
+  color: var(--input-text);
+  font-family: inherit;
+  font-size: 0.95rem;
+}
+
+.import-row input:focus {
+  outline: none;
+  border-color: var(--focus-border);
+  box-shadow: 0 0 0 3px var(--focus-ring);
+}
+
+.import-status {
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  margin-top: 10px;
+}
+
+.import-error {
+  color: var(--danger);
+  font-size: 0.9rem;
+  margin-top: 10px;
+}
+
+.import-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+/* Cook mode (Ticket 8): larger counter-distance text + tappable rows */
+.wake-badge {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  background: var(--hover-bg);
+  border: 1px solid var(--border-subtle);
+}
+
+.cook-ingredients li,
+.cook-steps li {
+  margin-bottom: 4px;
+}
+
+.cook-ingredients button,
+.cook-steps button {
+  display: block;
+  width: 100%;
+  text-align: left;
+  background: none;
+  border: none;
+  padding: 8px 6px;
+  font-size: 1.25rem;
+  line-height: 1.7;
+  color: var(--text-primary);
+  cursor: pointer;
+  border-radius: 4px;
+}
+
+.cook-ingredients button:hover,
+.cook-steps button:hover {
+  background: var(--hover-bg);
+}
+
+.cook-ingredients button.done {
+  text-decoration: line-through;
+  opacity: 0.55;
+}
+
+.cook-steps button.active {
+  background: var(--focus-ring);
+  box-shadow: inset 3px 0 0 var(--primary);
+}
+
+/* Print view (Ticket 8): keep only the recipe content */
+@media print {
+  .App-topnav,
+  .RecipePage-nav,
+  .recipe-photo-actions,
+  .recipe-scale-row,
+  .mp-inline-form,
+  .import-overlay,
+  .wake-badge,
+  .sl-added,
+  .gallery-thumbs,
+  .gallery-x,
+  .theme-toggle {
+    display: none !important;
+  }
+
+  body {
+    background: #fff;
+  }
+
+  .App-main-content {
+    padding: 0;
+    margin: 0;
+  }
+
+  .RecipeDetail h1 {
+    font-size: 2rem;
+  }
+}

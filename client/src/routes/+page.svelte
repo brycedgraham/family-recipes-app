@@ -1,13 +1,16 @@
 <script>
+  import { goto } from '$app/navigation';
   import { fetchRecipes, fetchCategories } from '#lib/api.js';
   import CategoryList from '#lib/components/CategoryList.svelte';
   import RecipeCard from '#lib/components/RecipeCard.svelte';
+  import ImportUrlModal from '#lib/components/ImportUrlModal.svelte';
 
   let categories = $state([]);
   let recipes = $state(null); // null while loading
   let selectedCategory = $state(null); // category name, or null for all
   let searchInput = $state('');
   let searchQuery = $state('');
+  let importOpen = $state(false);
 
   fetchCategories().then(data => {
     categories = data;
@@ -44,6 +47,7 @@
     />
     <hr style="margin: 20px 0" />
     <a href="/recipes/new" class="button-link" style="text-align: center">Add New Recipe</a>
+    <button type="button" class="secondary" style="width: 100%; margin-top: 8px; text-align: center" onclick={() => (importOpen = true)}>Import from URL</button>
   </aside>
   <main class="App-main-content">
     <input
@@ -64,4 +68,13 @@
       </div>
     {/if}
   </main>
+
+  <ImportUrlModal
+    open={importOpen}
+    onClose={() => (importOpen = false)}
+    onImported={recipe => {
+      importOpen = false;
+      goto(`/recipes/${recipe.id}`);
+    }}
+  />
 </div>

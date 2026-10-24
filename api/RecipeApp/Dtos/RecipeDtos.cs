@@ -34,6 +34,8 @@ public record RecipeRequest(
     int? CookTime,
     int? Servings);
 
+public record RecipeImportRequest(string Url);
+
 public static class RecipeMapper
 {
     public static RecipeDto ToDto(Recipe recipe) => new(

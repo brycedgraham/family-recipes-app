@@ -1,48 +1,48 @@
 /* Theme tokens. Light is default; dark overrides under [data-theme="dark"]. */
 :root {
-  --bg-app: #f8f9fa;
-  --bg-surface: #ffffff;
-  --text-primary: #333333;
-  --text-secondary: #555555;
-  --text-muted: #495057;
-  --text-heading: #343a40;
-  --input-text: #495057;
-  --border-subtle: #dee2e6;
-  --border-input: #ced4da;
-  --separator: #f0f0f0;
-  --hover-bg: #e9ecef;
-  --primary: #007bff;
-  --primary-hover: #0056b3;
-  --secondary: #6c757d;
-  --secondary-hover: #5a6268;
-  --danger: #dc3545;
-  --danger-hover: #c82333;
-  --input-bg: #ffffff;
-  --focus-border: #80bdff;
-  --focus-ring: rgba(0, 123, 255, 0.25);
+  --bg-app: #f3f1ea;
+  --bg-surface: #fbfaf6;
+  --text-primary: #2c352a;
+  --text-secondary: #5b6455;
+  --text-muted: #707a68;
+  --text-heading: #242d22;
+  --input-text: #3f4a3c;
+  --border-subtle: #dcd8cc;
+  --border-input: #c2beb0;
+  --separator: #e9e6dc;
+  --hover-bg: #e8e4d7;
+  --primary: #3e6b4a;
+  --primary-hover: #2f5539;
+  --secondary: #756c5c;
+  --secondary-hover: #5f574a;
+  --danger: #a9442e;
+  --danger-hover: #8c3523;
+  --input-bg: #fbfaf6;
+  --focus-border: #7fa98c;
+  --focus-ring: rgba(62, 107, 74, 0.25);
 }
 
 [data-theme="dark"] {
-  --bg-app: #121417;
-  --bg-surface: #1c1f24;
-  --text-primary: #e8eaed;
-  --text-secondary: #aeb4bb;
-  --text-muted: #b3b9c0;
-  --text-heading: #f1f3f4;
-  --input-text: #dfe2e5;
-  --border-subtle: #3a3f46;
-  --border-input: #4a515a;
-  --separator: #2c3138;
-  --hover-bg: #2a2f36;
-  --primary: #4dabff;
-  --primary-hover: #3b93e8;
-  --secondary: #6c757d;
-  --secondary-hover: #7d868e;
-  --danger: #dc3545;
-  --danger-hover: #e05260;
-  --input-bg: #15181c;
-  --focus-border: #6db3ff;
-  --focus-ring: rgba(77, 171, 255, 0.35);
+  --bg-app: #161a15;
+  --bg-surface: #20261f;
+  --text-primary: #e3e8dc;
+  --text-secondary: #aab3a1;
+  --text-muted: #98a291;
+  --text-heading: #edf1e7;
+  --input-text: #d5dccd;
+  --border-subtle: #3b443a;
+  --border-input: #4c574a;
+  --separator: #2d352b;
+  --hover-bg: #2a322a;
+  --primary: #7cb08c;
+  --primary-hover: #69a17a;
+  --secondary: #948b7a;
+  --secondary-hover: #a59d8c;
+  --danger: #d1604a;
+  --danger-hover: #dd7a66;
+  --input-bg: #131712;
+  --focus-border: #8fc3a0;
+  --focus-ring: rgba(124, 176, 140, 0.35);
 }
 
 /* Basic Reset */

@@ -6,7 +6,7 @@ namespace RecipeApp.Dtos;
 // Response shapes mirror the client's existing data model (client/src/dataModels.js):
 // recipe "name", category names as strings, ingredient quantity as a display string.
 
-public record IngredientDto(string Name, string? Quantity);
+public record IngredientDto(string Name, string? Quantity, decimal? Amount, string? Unit);
 
 public record RecipeDto(
     Guid Id,
@@ -42,10 +42,14 @@ public static class RecipeMapper
         recipe.Description,
         recipe.Categories.OrderBy(c => c.Name).Select(c => c.Name).ToList(),
         recipe.RecipeIngredients
-            .Select(ri => new IngredientDto(ri.Ingredient.Name, IngredientText.FormatQuantity(ri.Quantity, ri.Unit)))
+            .Select(ri => new IngredientDto(ri.Ingredient.Name, IngredientText.FormatQuantity(ri.Quantity, ri.Unit), ri.Quantity, ri.Unit))
             .ToList(),
         recipe.Steps.OrderBy(s => s.StepNumber).Select(s => s.Text).ToList(),
-        [], // image support lands in Phase 6; empty list keeps existing client components safe
+        recipe.Images
+            .OrderBy(i => i.SortOrder)
+            .ThenBy(i => i.CreatedAt)
+            .Select(i => $"/api/images/{recipe.Id}/{i.FileName}")
+            .ToList(),
         recipe.PrepTimeMinutes,
         recipe.CookTimeMinutes,
         recipe.Servings);

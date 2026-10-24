@@ -13,6 +13,11 @@ public class RecipeDbContext : DbContext
     public DbSet<RecipeIngredient> RecipeIngredients => Set<RecipeIngredient>();
     public DbSet<RecipeStep> RecipeSteps => Set<RecipeStep>();
     public DbSet<Category> Categories => Set<Category>();
+    public DbSet<ShoppingList> ShoppingLists => Set<ShoppingList>();
+    public DbSet<ShoppingListItem> ShoppingListItems => Set<ShoppingListItem>();
+    public DbSet<MealPlan> MealPlans => Set<MealPlan>();
+    public DbSet<MealPlanEntry> MealPlanEntries => Set<MealPlanEntry>();
+    public DbSet<RecipeImage> RecipeImages => Set<RecipeImage>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -73,6 +78,76 @@ public class RecipeDbContext : DbContext
             entity.HasIndex(c => c.Name).IsUnique();
             entity.Property(c => c.Name).HasMaxLength(100).IsRequired();
             entity.Property(c => c.Description).HasMaxLength(500);
+        });
+
+        // ShoppingList
+        modelBuilder.Entity<ShoppingList>(entity =>
+        {
+            entity.HasIndex(l => l.ShareToken).IsUnique();
+            entity.Property(l => l.Name).HasMaxLength(200).IsRequired();
+            entity.Property(l => l.ShareToken).HasMaxLength(64).IsRequired();
+        });
+
+        // ShoppingListItem
+        modelBuilder.Entity<ShoppingListItem>(entity =>
+        {
+            entity.HasIndex(i => new { i.ShoppingListId, i.Category });
+            entity.Property(i => i.Name).HasMaxLength(200).IsRequired();
+            entity.Property(i => i.Category).HasMaxLength(50).IsRequired();
+            entity.Property(i => i.Quantity).HasPrecision(18, 4);
+            entity.Property(i => i.Unit).HasMaxLength(20);
+            entity.Property(i => i.Notes).HasMaxLength(500);
+            entity.Property(i => i.RecipeSources).HasMaxLength(1000);
+
+            entity.HasOne(i => i.ShoppingList)
+                .WithMany(l => l.Items)
+                .HasForeignKey(i => i.ShoppingListId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne<Ingredient>()
+                .WithMany()
+                .HasForeignKey(i => i.IngredientId)
+                .OnDelete(DeleteBehavior.SetNull);
+        });
+
+        // MealPlan
+        modelBuilder.Entity<MealPlan>(entity =>
+        {
+            entity.HasIndex(p => p.WeekStartDate).IsUnique();
+            entity.Property(p => p.WeekStartDate).HasMaxLength(10).IsRequired();
+            entity.Property(p => p.Name).HasMaxLength(200).IsRequired();
+        });
+
+        // MealPlanEntry
+        modelBuilder.Entity<MealPlanEntry>(entity =>
+        {
+            entity.HasIndex(e => new { e.MealPlanId, e.DayOfWeek, e.MealType, e.SortOrder });
+            entity.Property(e => e.MealType).HasMaxLength(20).IsRequired();
+            entity.Property(e => e.Multiplier).HasPrecision(18, 4);
+            entity.Property(e => e.CustomTitle).HasMaxLength(200);
+            entity.Property(e => e.Notes).HasMaxLength(500);
+
+            entity.HasOne(e => e.MealPlan)
+                .WithMany(p => p.Entries)
+                .HasForeignKey(e => e.MealPlanId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(e => e.Recipe)
+                .WithMany()
+                .HasForeignKey(e => e.RecipeId)
+                .OnDelete(DeleteBehavior.SetNull);
+        });
+
+        // RecipeImage (metadata only; the file lives on disk under data/images/{RecipeId}/)
+        modelBuilder.Entity<RecipeImage>(entity =>
+        {
+            entity.HasIndex(i => i.FileName).IsUnique();
+            entity.Property(i => i.FileName).HasMaxLength(200).IsRequired();
+
+            entity.HasOne(i => i.Recipe)
+                .WithMany(r => r.Images)
+                .HasForeignKey(i => i.RecipeId)
+                .OnDelete(DeleteBehavior.Cascade);
         });
 
         // Recipe-Category many-to-many

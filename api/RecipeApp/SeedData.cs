@@ -24,11 +24,11 @@ public static class SeedData
             ?? throw new DirectoryNotFoundException("Could not find a recipes_json directory at or above the working directory.");
 
         var options = new DbContextOptionsBuilder<RecipeDbContext>()
-            .UseNpgsql(connectionString)
+            .UseSqlite(SqliteDatabase.Resolve(connectionString))
             .Options;
 
         await using var db = new RecipeDbContext(options);
-        await db.Database.EnsureCreatedAsync();
+        await db.Database.MigrateAsync();
 
         var repo = new RecipeRepository(db);
         var existingTitles = (await db.Recipes.Select(r => r.Title).ToListAsync()).ToHashSet(StringComparer.Ordinal);
@@ -75,13 +75,15 @@ public static class SeedData
 
                 foreach (var line in data.Ingredients ?? [])
                 {
-                    if (string.IsNullOrWhiteSpace(line)) continue;
-                    var (quantity, unit, name) = IngredientText.SplitLine(line);
-                    var ingredient = await repo.FindOrCreateIngredientAsync(name.Length > 0 ? name : line.Trim());
+                    var cleaned = IngredientText.CleanLine(line);
+                    if (cleaned is null) continue;
+                    var (quantity, unit, name, notes) = IngredientText.SplitLine(cleaned);
+                    var ingredient = await repo.FindOrCreateIngredientAsync(name.Length > 0 ? name : cleaned);
                     recipe.RecipeIngredients.Add(new RecipeIngredient
                     {
                         Quantity = quantity,
                         Unit = unit,
+                        Notes = string.IsNullOrWhiteSpace(notes) ? null : notes,
                         IngredientId = ingredient.Id,
                     });
                 }

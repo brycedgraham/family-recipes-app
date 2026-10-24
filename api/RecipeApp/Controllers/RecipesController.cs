@@ -3,6 +3,7 @@ using RecipeApp.Core;
 using RecipeApp.Core.Interfaces;
 using RecipeApp.Core.Models;
 using RecipeApp.Dtos;
+using RecipeApp.Api.Services;
 
 namespace RecipeApp.Api.Controllers;
 
@@ -11,10 +12,12 @@ namespace RecipeApp.Api.Controllers;
 public class RecipesController : ControllerBase
 {
     private readonly IRecipeRepository _recipes;
+    private readonly ImageStore _images;
 
-    public RecipesController(IRecipeRepository recipes)
+    public RecipesController(IRecipeRepository recipes, ImageStore images)
     {
         _recipes = recipes;
+        _images = images;
     }
 
     [HttpGet]
@@ -58,7 +61,54 @@ public class RecipesController : ControllerBase
     public async Task<IActionResult> Delete(Guid id)
     {
         var deleted = await _recipes.DeleteAsync(id);
+        if (deleted) _images.DeleteRecipeDirectory(id);
         return deleted ? NoContent() : NotFound();
+    }
+
+    /// <summary>Uploads one or more photos for the recipe (multipart field "files").</summary>
+    [HttpPost("{id:guid}/images")]
+    public async Task<ActionResult<RecipeDto>> AddImages(Guid id, [FromForm] IFormFileCollection files)
+    {
+        if (files.Count == 0) return BadRequest("No files provided.");
+        var recipe = await _recipes.GetByIdAsync(id);
+        if (recipe is null) return NotFound();
+
+        foreach (var file in files)
+        {
+            if (!ImageStore.IsAllowedFile(file))
+                return BadRequest($"Unsupported image: use .jpg, .jpeg, .png, .webp or .gif, max 10 MB per file.");
+        }
+
+        var now = DateTime.UtcNow;
+        foreach (var file in files)
+        {
+            recipe.Images.Add(new RecipeImage
+            {
+                RecipeId = id,
+                FileName = _images.Save(id, file),
+                SortOrder = recipe.Images.Count + 1,
+                CreatedAt = now,
+            });
+        }
+
+        var updated = await _recipes.UpdateAsync(recipe);
+        return Ok(RecipeMapper.ToDto(updated));
+    }
+
+    /// <summary>Removes one photo (DB row + file on disk).</summary>
+    [HttpDelete("{id:guid}/images/{fileName}")]
+    public async Task<ActionResult<RecipeDto>> DeleteImage(Guid id, string fileName)
+    {
+        var recipe = await _recipes.GetByIdAsync(id);
+        if (recipe is null) return NotFound();
+
+        var image = recipe.Images.FirstOrDefault(i => i.FileName == fileName);
+        if (image is null) return NotFound();
+
+        recipe.Images.Remove(image);
+        var updated = await _recipes.UpdateAsync(recipe);
+        _images.DeleteFile(id, fileName);
+        return Ok(RecipeMapper.ToDto(updated));
     }
 
     private async Task ApplyAsync(Recipe recipe, RecipeRequest request)

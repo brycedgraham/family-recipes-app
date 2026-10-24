@@ -3,7 +3,7 @@
 
 No LLM involved — the markdown format is regular enough to parse with rules.
 
-Format handled (see ROADMAP.md for notes):
+Format handled (see PLAN.md for notes):
   # **Category** {#cat-slug}     category header
   ## Title {#recipe-slug}        recipe header
   - ingredient lines: start with a quantity token (digits, 1/2-style or unicode
@@ -70,6 +70,12 @@ def classify_no_headers(lines: list[str]) -> tuple[list[str], list[str]]:
             continue
         if NUMBERED_STEP_RE.match(line):
             instructions.append(re.sub(r"^\s*\d+\.\s*", "", line))
+            seen_step = True
+            last_was_ing = False
+            continue
+        # All-caps subheadings ("FOR THE FILLING") mark instruction sections, not ingredients.
+        if line.isupper() and any(c.isalpha() for c in line) and not any(c.isdigit() for c in line):
+            instructions.append(line)
             seen_step = True
             last_was_ing = False
             continue

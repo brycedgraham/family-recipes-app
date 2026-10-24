@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using RecipeApp.Core;
 using RecipeApp.Core.Interfaces;
 using RecipeApp.Core.Models;
 using RecipeApp.Infrastructure.Data;
@@ -21,6 +22,7 @@ public class RecipeRepository : IRecipeRepository
                 .ThenInclude(ri => ri.Ingredient)
             .Include(r => r.Steps)
             .Include(r => r.Categories)
+            .Include(r => r.Images)
             .FirstOrDefaultAsync(r => r.Id == id);
     }
 
@@ -30,13 +32,14 @@ public class RecipeRepository : IRecipeRepository
             .Include(r => r.Categories)
             .Include(r => r.RecipeIngredients).ThenInclude(ri => ri.Ingredient)
             .Include(r => r.Steps)
+            .Include(r => r.Images)
             .AsNoTracking();
 
         if (!string.IsNullOrWhiteSpace(search))
         {
             var term = search.Trim();
-            query = query.Where(r => EF.Functions.ILike(r.Title, $"%{term}%")
-                || (r.Description != null && EF.Functions.ILike(r.Description, $"%{term}%")));
+            query = query.Where(r => EF.Functions.Like(r.Title, $"%{term}%")
+                || (r.Description != null && EF.Functions.Like(r.Description, $"%{term}%")));
         }
 
         if (!string.IsNullOrWhiteSpace(categoryName))
@@ -90,7 +93,7 @@ public class RecipeRepository : IRecipeRepository
     public async Task<Category> FindOrCreateCategoryAsync(string name)
     {
         var trimmed = name.Trim();
-        var existing = await _context.Categories.FirstOrDefaultAsync(c => EF.Functions.ILike(c.Name, trimmed));
+        var existing = await _context.Categories.FirstOrDefaultAsync(c => EF.Functions.Like(c.Name, trimmed));
         if (existing != null) return existing;
 
         var category = new Category { Name = trimmed };
@@ -102,11 +105,27 @@ public class RecipeRepository : IRecipeRepository
     public async Task<Ingredient> FindOrCreateIngredientAsync(string name)
     {
         var trimmed = name.Trim();
-        var normalized = trimmed.ToLowerInvariant();
-        var existing = await _context.Ingredients.FirstOrDefaultAsync(i => i.NormalizedName == normalized);
-        if (existing != null) return existing;
+        var normalized = IngredientText.NormalizeName(trimmed);
+        if (normalized.Length == 0) normalized = trimmed.ToLowerInvariant();
 
-        var ingredient = new Ingredient { Name = trimmed, NormalizedName = normalized };
+        var existing = await _context.Ingredients.FirstOrDefaultAsync(i => i.NormalizedName == normalized);
+        if (existing is not null)
+        {
+            // Backfill the category hint for rows seeded before classifier support.
+            if (string.IsNullOrEmpty(existing.Category))
+            {
+                existing.Category = IngredientCategoryClassifier.GuessCategory(normalized);
+                await _context.SaveChangesAsync();
+            }
+            return existing;
+        }
+
+        var ingredient = new Ingredient
+        {
+            Name = trimmed,
+            NormalizedName = normalized,
+            Category = IngredientCategoryClassifier.GuessCategory(normalized),
+        };
         _context.Ingredients.Add(ingredient);
         await _context.SaveChangesAsync();
         return ingredient;

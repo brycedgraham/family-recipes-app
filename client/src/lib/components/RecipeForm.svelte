@@ -191,7 +191,7 @@
 
     <div class="form-actions">
       <button type="submit" disabled={submitting}>{submitting ? 'Saving…' : isEditMode ? 'Save Changes' : 'Add Recipe'}</button>
-      <button type="button" onclick={() => goto(isEditMode ? `/recipes/${recipeId}` : '/')}>Cancel</button>
+      <button type="button" class="secondary" onclick={() => goto(isEditMode ? `/recipes/${recipeId}` : '/')}>Cancel</button>
     </div>
   </form>
 </div>

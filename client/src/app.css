@@ -1,48 +1,78 @@
 /* Theme tokens. Light is default; dark overrides under [data-theme="dark"]. */
 :root {
-  --bg-app: #f3f1ea;
-  --bg-surface: #fbfaf6;
-  --text-primary: #2c352a;
-  --text-secondary: #5b6455;
-  --text-muted: #707a68;
-  --text-heading: #242d22;
-  --input-text: #3f4a3c;
-  --border-subtle: #dcd8cc;
-  --border-input: #c2beb0;
-  --separator: #e9e6dc;
-  --hover-bg: #e8e4d7;
-  --primary: #3e6b4a;
-  --primary-hover: #2f5539;
-  --secondary: #756c5c;
-  --secondary-hover: #5f574a;
+  /* Forest & Earth palette (Ticket 10) — warm parchment light theme */
+  --bg-app: #f8f5ee; /* Warm parchment page background */
+  --bg-surface: #ede7dc; /* Birch paper cards/panels */
+  --hover-bg: #e2dbce; /* Surface hover */
+  --text-primary: #322d24; /* High-contrast earth charcoal */
+  --text-secondary: #6a6252;
+  --text-muted: #877e6b;
+  --text-heading: #29251c;
+  --input-text: #4a4436;
+  --border-subtle: #d4cbba; /* Muted lichen borders */
+  --border-input: #b9ae97;
+  --separator: #e0d8c8;
+  --primary: #2d5a3f; /* Rich pine green */
+  --primary-hover: #224631;
+  --secondary: #8c5835; /* Warm terracotta cedar */
+  --secondary-hover: #754628;
   --danger: #a9442e;
   --danger-hover: #8c3523;
-  --input-bg: #fbfaf6;
-  --focus-border: #7fa98c;
-  --focus-ring: rgba(62, 107, 74, 0.25);
+  --input-bg: #fcfaf4;
+  --focus-border: #6f9c81;
+  --focus-ring: rgba(45, 90, 63, 0.25);
+  /* Wood-plank buttons: fine milled cedar */
+  --plank-top: #8a5a34;
+  --plank-mid: #734a2c;
+  --plank-bottom: #5c3a20;
+  --plank-edge: #4e2f18; /* Crisp dark bronze timber edge */
+  --plank-text: #fdf6e9; /* Rich cream text */
+  --plank2-top: #9c6a41;
+  --plank2-mid: #8c5835;
+  --plank2-bottom: #6f4527;
+  --plank2-edge: #5a3a1f;
+  /* Pine bark panels (theme-independent) */
+  --bark-base: #33251e;
+  --bark-text: #ece2cf; /* Warm parchment text on bark */
+  --bark-text-dim: #c8bca4;
+  --bark-edge: #241a13;
+  --bark-texture:
+    repeating-linear-gradient(90deg, rgba(0, 0, 0, 0.22) 0px, rgba(0, 0, 0, 0.22) 1px, transparent 1px, transparent 5px, rgba(255, 214, 170, 0.05) 5px, rgba(255, 214, 170, 0.05) 6px, transparent 6px, transparent 13px),
+    repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.03) 0px, rgba(255, 255, 255, 0.03) 7px, rgba(0, 0, 0, 0.06) 7px, rgba(0, 0, 0, 0.06) 15px, transparent 15px, transparent 27px);
 }
 
 [data-theme="dark"] {
-  --bg-app: #161a15;
-  --bg-surface: #20261f;
-  --text-primary: #e3e8dc;
-  --text-secondary: #aab3a1;
-  --text-muted: #98a291;
-  --text-heading: #edf1e7;
-  --input-text: #d5dccd;
-  --border-subtle: #3b443a;
-  --border-input: #4c574a;
-  --separator: #2d352b;
-  --hover-bg: #2a322a;
-  --primary: #7cb08c;
-  --primary-hover: #69a17a;
-  --secondary: #948b7a;
-  --secondary-hover: #a59d8c;
+  /* Deep pine needle & charred timber dark theme (Ticket 10) */
+  --bg-app: #1a221d;
+  --bg-surface: #242e27;
+  --hover-bg: #2c3830;
+  --text-primary: #e5e9dd;
+  --text-secondary: #b0b8a6;
+  --text-muted: #939d8b;
+  --text-heading: #eef2e8;
+  --input-text: #d7ded0;
+  --border-subtle: #3b473f; /* Muted lichen borders */
+  --border-input: #566558;
+  --separator: #313c34;
+  --primary: #4e8766; /* Pine green for dark surfaces */
+  --primary-hover: #407254;
+  --secondary: #96613c; /* Cedar lifted slightly for dark surfaces */
+  --secondary-hover: #7d5130;
   --danger: #d1604a;
   --danger-hover: #dd7a66;
-  --input-bg: #131712;
+  --input-bg: #1d251f;
   --focus-border: #8fc3a0;
-  --focus-ring: rgba(124, 176, 140, 0.35);
+  --focus-ring: rgba(78, 135, 102, 0.35);
+  /* Charred timber plank buttons */
+  --plank-top: #7e5230;
+  --plank-mid: #684226;
+  --plank-bottom: #523318;
+  --plank-edge: #402812;
+  --plank-text: #f7efdd;
+  --plank2-top: #8d5c38;
+  --plank2-mid: #7a4c2b;
+  --plank2-bottom: #613a1f;
+  --plank2-edge: #4e3018;
 }
 
 /* Basic Reset */
@@ -102,12 +132,14 @@ h2 { font-size: 2rem; }
 h3 { font-size: 1.75rem; }
 
 
-/* Basic Button Styling */
+/* Basic Button Styling — wood-plank treatment (Ticket 10) */
 button,
-a.button-link { /* Class for anchor tags styled as buttons */
-  background-color: var(--primary);
-  color: white;
-  border: 1px solid var(--primary);
+a.button-link, /* Class for anchor tags styled as buttons */
+a.secondary {
+  background-color: var(--plank-mid);
+  background-image: linear-gradient(180deg, var(--plank-top) 0%, var(--plank-mid) 55%, var(--plank-bottom) 100%); /* Fine milled cedar grain */
+  color: var(--plank-text); /* Rich cream text — legible from counter distance */
+  border: 1px solid var(--plank-edge); /* Crisp warm timber edge */
   padding: 10px 15px;
   line-height: normal; /* match <button> so a.button-link is the same height */
   text-align: center;
@@ -117,40 +149,63 @@ a.button-link { /* Class for anchor tags styled as buttons */
   font-weight: 500;
   border-radius: 0.25rem; /* Slightly less rounded */
   cursor: pointer;
-  transition: background-color 0.15s ease-in-out, border-color 0.15s ease-in-out, color 0.15s ease-in-out;
+  box-shadow: inset 0 1px 0 rgba(255, 233, 197, 0.3), inset 0 -1px 0 rgba(0, 0, 0, 0.22), 0 1px 2px rgba(0, 0, 0, 0.18); /* Soft bevel + lift */
+  transition: filter 0.15s ease-in-out, border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out, transform 0.06s ease;
   font-family: inherit; /* Ensure buttons use the body font */
 }
 
 button:hover,
-a.button-link:hover {
-  background-color: var(--primary-hover);
-  border-color: var(--primary-hover);
-  color: white;
+a.button-link:hover,
+a.secondary:hover {
+  filter: brightness(0.93); /* Deepen the grain on hover */
+  border-color: var(--plank-bottom);
+  color: var(--plank-text);
   text-decoration: none; /* Remove underline from link on hover */
 }
 
 button:focus, button:focus-visible,
-a.button-link:focus, a.button-link:focus-visible {
+a.button-link:focus, a.button-link:focus-visible,
+a.secondary:focus, a.secondary:focus-visible {
   outline: 2px auto var(--primary-hover); /* Simpler focus outline */
-  box-shadow: 0 0 0 0.2rem var(--focus-ring);
+  box-shadow: 0 0 0 0.2rem var(--focus-ring), inset 0 1px 0 rgba(255, 233, 197, 0.3);
 }
 
-
-button.secondary {
-    background-color: var(--secondary);
-    border-color: var(--secondary);
+/* Realistic press-down for plank buttons */
+button:active,
+a.button-link:active,
+a.secondary:active {
+  transform: translateY(1px);
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3);
 }
-button.secondary:hover {
-    background-color: var(--secondary-hover);
-    border-color: var(--secondary-hover);
+
+/* Reusable timber class for non-button elements that need the plank look */
+.btn-plank {
+  background-color: var(--plank-mid);
+  background-image: linear-gradient(180deg, var(--plank-top) 0%, var(--plank-mid) 55%, var(--plank-bottom) 100%);
+  color: var(--plank-text);
+  border: 1px solid var(--plank-edge);
+  box-shadow: inset 0 1px 0 rgba(255, 233, 197, 0.3), inset 0 -1px 0 rgba(0, 0, 0, 0.22), 0 1px 2px rgba(0, 0, 0, 0.18);
+}
+
+button.secondary,
+a.secondary {
+    background-color: var(--plank2-mid); /* Terracotta cedar variant */
+    background-image: linear-gradient(180deg, var(--plank2-top) 0%, var(--plank2-mid) 55%, var(--plank2-bottom) 100%);
+    border-color: var(--plank2-edge);
+}
+button.secondary:hover,
+a.secondary:hover {
+    filter: brightness(0.93);
+    border-color: var(--plank2-bottom);
 }
 
 button.danger {
-    background-color: var(--danger);
+    background: var(--danger); /* Shorthand resets the plank gradient */
     border-color: var(--danger);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.18), inset 0 -1px 0 rgba(0, 0, 0, 0.22), 0 1px 2px rgba(0, 0, 0, 0.18);
 }
 button.danger:hover {
-    background-color: var(--danger-hover);
+    background: var(--danger-hover);
     border-color: var(--danger-hover);
 }
 
@@ -234,8 +289,12 @@ label {
   width: 280px; /* Slightly wider sidebar */
   flex-shrink: 0; /* Never let the main column crush the sidebar */
   padding: 20px;
-  background-color: var(--bg-surface); /* White background for sidebar */
-  border-right: 1px solid var(--border-subtle); /* Softer border color */
+  /* Pine bark panel (Ticket 10) */
+  background-color: var(--bark-base);
+  background-image: var(--bark-texture), linear-gradient(180deg, #3a2b21 0%, var(--bark-base) 45%, #2b1e17 100%);
+  border-right: 1px solid var(--bark-edge);
+  box-shadow: inset -10px 0 14px -10px rgba(0, 0, 0, 0.65), inset 1px 0 0 rgba(255, 220, 180, 0.07);
+  color: var(--bark-text); /* Warm parchment text on bark */
   max-height: 100vh; /* Ensure sidebar height is constrained */
   overflow-y: auto; /* Allow scrolling if content exceeds height */
   display: flex;
@@ -243,12 +302,17 @@ label {
 }
 
 .App-sidebar h2 a {
-  color: var(--text-heading); /* Darker heading color */
+  color: #f3ead9;
   text-decoration: none;
   font-size: 1.75rem; /* Slightly larger */
 }
 .App-sidebar h2 a:hover {
-  color: var(--primary);
+  color: #ffffff;
+}
+
+.App-sidebar hr {
+  border: none;
+  border-top: 1px solid rgba(236, 226, 207, 0.22);
 }
 
 
@@ -307,16 +371,10 @@ label {
 }
 .RecipeCard a.button-link, .RecipeCard button {
   margin-top: auto; /* Push button to the bottom */
-  background-color: var(--primary);
-  color: white;
   padding: 8px 12px;
   text-align: center;
   border-radius: 0.25rem;
-  text-decoration: none; /* Ensure link looks like a button */
   display: block; /* Make it full width within its padding */
-}
-.RecipeCard a.button-link:hover, .RecipeCard button:hover {
-  background-color: var(--primary-hover);
 }
 
 
@@ -385,7 +443,7 @@ label {
   height: 22px;
   padding: 0;
   border-radius: 50%;
-  background-color: var(--danger);
+  background: var(--danger); /* Shorthand resets the plank gradient */
   color: #fff;
   font-size: 14px;
   line-height: 1;
@@ -422,7 +480,7 @@ label {
   border: 2px solid transparent;
   border-radius: 6px;
   overflow: hidden;
-  background-color: var(--bg-surface);
+  background: var(--bg-surface); /* Shorthand resets the plank gradient */
 }
 
 .gallery-thumbs button.thumb-img.active {
@@ -531,12 +589,14 @@ label {
   flex-grow: 1; /* Name takes remaining space */
 }
 .RecipeForm .ingredient-field button {
-  background-color: var(--danger); /* Danger color for remove */
+  background: var(--danger); /* Danger color for remove (shorthand resets plank gradient) */
+  border-color: var(--danger);
   padding: 8px 12px; /* Adjust padding for smaller button */
   font-size: 0.9rem;
 }
 .RecipeForm .ingredient-field button:hover {
-  background-color: var(--danger-hover);
+  background: var(--danger-hover);
+  border-color: var(--danger-hover);
 }
 
 .RecipeForm .form-actions {
@@ -548,13 +608,6 @@ label {
 .RecipeForm .form-actions button {
   padding: 10px 20px;
 }
-.RecipeForm .form-actions button[type="button"] { /* Cancel button */
-  background-color: var(--secondary); /* Secondary color */
-}
-.RecipeForm .form-actions button[type="button"]:hover {
-  background-color: var(--secondary-hover);
-}
-
 
 /* CategoryList specific styling */
 .CategoryList {
@@ -572,21 +625,24 @@ label {
   cursor: pointer;
   background: none;
   border: none;
-  border-bottom: 1px solid var(--separator); /* Subtle separator */
+  border-bottom: 1px solid rgba(236, 226, 207, 0.14); /* Subtle separator on bark */
   font: inherit;
   color: inherit;
   text-align: left;
-  transition: background-color 0.2s ease;
+  transition: background-color 0.2s ease, color 0.2s ease;
   font-size: 1rem;
 }
 .CategoryList .category-item:hover {
-  background-color: var(--hover-bg); /* Light hover effect */
-  color: var(--primary);
+  background-color: rgba(248, 245, 238, 0.08); /* Warm parchment hover on bark */
+  color: #f6efdd;
 }
 .CategoryList .category-item.active-category {
+  /* Pine green badge with warm parchment text (Ticket 10) */
   background-color: var(--primary);
-  color: white;
+  border-bottom-color: transparent;
+  color: #f6efdd;
   font-weight: bold;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.18), inset 0 -1px 0 rgba(0, 0, 0, 0.3);
 }
 .CategoryList .category-item.active-category:hover {
   background-color: var(--primary-hover);
@@ -658,6 +714,7 @@ label {
   margin-left: 2px;
   border-radius: 50%;
   background-color: var(--bg-surface);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.3); /* Lift thumb off the track (Ticket 10) */
   font-size: 12px;
   line-height: 1;
   transition: transform 0.2s ease;
@@ -687,21 +744,23 @@ label {
   margin: 20px auto 0;
 }
 
-/* Top navigation (Ticket 2) */
+/* Top navigation (Ticket 2) — pine bark panel (Ticket 10) */
 .App-topnav {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
   padding: 10px 16px;
-  background: var(--bg-surface);
-  border-bottom: 1px solid var(--border-subtle);
+  background-color: var(--bark-base);
+  background-image: var(--bark-texture), linear-gradient(180deg, #3a2b21 0%, var(--bark-base) 45%, #2b1e17 100%);
+  border-bottom: 1px solid var(--bark-edge);
+  box-shadow: inset 0 -8px 12px -10px rgba(0, 0, 0, 0.65), 0 1px 3px rgba(0, 0, 0, 0.25);
   position: sticky;
   top: 0;
   z-index: 10;
 }
 
 .App-topnav a {
-  color: var(--text-secondary);
+  color: var(--bark-text-dim);
   text-decoration: none;
   font-weight: 600;
   padding: 6px 12px;
@@ -709,13 +768,15 @@ label {
 }
 
 .App-topnav a:hover {
-  background: var(--hover-bg);
-  color: var(--text-heading);
+  background: rgba(248, 245, 238, 0.07);
+  color: var(--bark-text);
 }
 
 .App-topnav a.active {
-  color: var(--primary);
-  background: var(--hover-bg);
+  /* Pine green badge with warm parchment text (Ticket 10) */
+  background-color: var(--primary);
+  color: #f6efdd;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.14), 0 1px 2px rgba(0, 0, 0, 0.35);
 }
 
 /* Shopping list index */
@@ -986,6 +1047,14 @@ label {
 .scale-buttons button.active {
   background: var(--primary);
   color: #fff;
+}
+
+/* Dark theme: deepen pine active badges so white/cream text keeps AA contrast (Ticket 10) */
+[data-theme="dark"] .sl-storebar button.active,
+[data-theme="dark"] .scale-buttons button.active,
+[data-theme="dark"] .CategoryList .category-item.active-category,
+[data-theme="dark"] .App-topnav a.active {
+  background-color: #407254;
 }
 
 .sl-added {

@@ -31,6 +31,9 @@
   --plank2-mid: #8c5835;
   --plank2-bottom: #6f4527;
   --plank2-edge: #5a3a1f;
+  --plank-photo: url('/textures/wood_plank.webp'); /* Real wood plank photo (Ticket 14) */
+  --plank-overlay: linear-gradient(180deg, rgba(95, 56, 28, 0.45) 0%, rgba(72, 41, 19, 0.58) 50%, rgba(52, 29, 12, 0.68) 100%); /* Warm deep cedar/walnut stain — grain shows through */
+  --plank2-overlay: linear-gradient(180deg, rgba(120, 74, 40, 0.38) 0%, rgba(96, 58, 30, 0.52) 100%); /* Lighter warm amber/sienna stain */
   /* Pine bark panels (theme-independent) */
   --bark-base: #33251e;
   --bark-text: #ece2cf; /* Warm parchment text on bark */
@@ -73,6 +76,8 @@
   --plank2-mid: #7a4c2b;
   --plank2-bottom: #613a1f;
   --plank2-edge: #4e3018;
+  --plank-overlay: linear-gradient(180deg, rgba(65, 38, 19, 0.55) 0%, rgba(38, 22, 10, 0.72) 100%); /* Deeper charred-timber stain (Ticket 14) */
+  --plank2-overlay: linear-gradient(180deg, rgba(88, 54, 28, 0.48) 0%, rgba(58, 34, 17, 0.65) 100%); /* Charred amber stain (Ticket 14) */
 }
 
 /* Basic Reset */
@@ -137,8 +142,11 @@ button,
 a.button-link, /* Class for anchor tags styled as buttons */
 a.secondary {
   background-color: var(--plank-mid);
-  background-image: linear-gradient(180deg, var(--plank-top) 0%, var(--plank-mid) 55%, var(--plank-bottom) 100%); /* Fine milled cedar grain */
+  background-image: var(--plank-overlay), var(--plank-photo); /* Real wood grain under translucent stain (Ticket 14) */
+  background-size: cover;
+  background-position: center;
   color: var(--plank-text); /* Rich cream text — legible from counter distance */
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.65); /* Labels pop over light grain streaks (Ticket 14) */
   border: 1px solid var(--plank-edge); /* Crisp warm timber edge */
   padding: 10px 15px;
   line-height: normal; /* match <button> so a.button-link is the same height */
@@ -181,8 +189,11 @@ a.secondary:active {
 /* Reusable timber class for non-button elements that need the plank look */
 .btn-plank {
   background-color: var(--plank-mid);
-  background-image: linear-gradient(180deg, var(--plank-top) 0%, var(--plank-mid) 55%, var(--plank-bottom) 100%);
+  background-image: var(--plank-overlay), var(--plank-photo); /* Real wood grain under translucent stain (Ticket 14) */
+  background-size: cover;
+  background-position: center;
   color: var(--plank-text);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.65);
   border: 1px solid var(--plank-edge);
   box-shadow: inset 0 1px 0 rgba(255, 233, 197, 0.3), inset 0 -1px 0 rgba(0, 0, 0, 0.22), 0 1px 2px rgba(0, 0, 0, 0.18);
 }
@@ -190,7 +201,9 @@ a.secondary:active {
 button.secondary,
 a.secondary {
     background-color: var(--plank2-mid); /* Terracotta cedar variant */
-    background-image: linear-gradient(180deg, var(--plank2-top) 0%, var(--plank2-mid) 55%, var(--plank2-bottom) 100%);
+    background-image: var(--plank2-overlay), var(--plank-photo); /* Real wood grain under lighter amber stain (Ticket 14) */
+    background-size: cover;
+    background-position: center;
     border-color: var(--plank2-edge);
 }
 button.secondary:hover,

@@ -26,6 +26,9 @@ recipes_json/
 data/*
 !data/.gitkeep
 
+# Backups (local snapshots; never commit)
+backups/
+
 # IDE
 .vscode/
 .idea/

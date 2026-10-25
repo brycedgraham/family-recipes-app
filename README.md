@@ -35,6 +35,30 @@ docker compose down              # stop (data stays in ./data)
 - **Re-seed manually** (e.g. after regenerating `recipes_json/` and rebuilding):
   `docker compose run --rm app dotnet RecipeApp.dll seed` — idempotent, skips existing titles.
 
+## Backup & restore
+
+Three layers, all targeting the same live data (`./data` — bind-mounted to `/data` in Docker):
+
+```bash
+# 1. One-click off-site copy from the browser:
+#    sidebar → "Download Backup" → GET /api/backup streams recipeapp-backup-YYYY-MM-DD.zip
+#    (a consistent SQLite snapshot via VACUUM INTO + everything under data/images/)
+
+# 2. Local archive backup — WAL-safe online hot backup, retains the newest 14:
+./backup.sh
+./backup.sh --install-cron   # nightly at 03:00 (idempotent), logs to backups/backup.log
+
+# 3. Restore from an archive — takes a pre-restore safety snapshot first,
+#    stops the container, clears stale -wal/-shm, extracts, starts again:
+./restore.sh backups/recipeapp_backup_YYYYMMDD_HHMMSS.tar.gz
+```
+
+- The live DB runs in **WAL mode**, so `backup.sh` uses SQLite's online backup API (Python stdlib —
+  no `sqlite3` CLI needed) instead of a plain file copy; the archived `recipes.db` is converted to
+  rollback journal mode and is a single self-contained file. `backups/` is gitignored.
+- Restore refuses archives that don't contain `recipes.db`, and always snapshots first, so a botched
+  restore is itself reversible (`./restore.sh backups/<the-newer-archive>`).
+
 ## Development workflow
 
 ```bash

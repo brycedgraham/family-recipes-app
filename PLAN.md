@@ -5,9 +5,10 @@
 > older ticket report, this file wins. Per-repo conventions, layer rules, Svelte 5 runes rules,
 > and commands live in `AGENTS.md` — read that first (see the cold-start protocol below).
 
-**Status: 2026-10-24.** Deliverables 1–9 complete and verified; next work is **Deliverable 10**
-(automated unit tests + backup script). The app runs as one .NET process on
-`http://0.0.0.0:5051` serving the SPA, API, SQLite, and recipe photos.
+**Status: 2026-10-25.** Deliverables 1–10 complete and verified; the backup/restore half of
+Deliverable 11 also landed early as **TICKET_13** (WAL-safe `backup.sh` + `restore.sh` + nightly
+cron + one-click `GET /api/backup`). Next work is **Deliverable 11**: the xUnit test project.
+The app runs as one .NET process on `http://0.0.0.0:5051` serving the SPA, API, SQLite, and recipe photos.
 
 ---
 
@@ -135,8 +136,11 @@ dotnet run --project api/RecipeApp -- seed        # idempotent import of recipes
 ## 4. Upcoming Deliverables Backlog
 
 - [ ] **Deliverable 11: Automated Unit Tests (`RecipeApp.Tests`) & Backup Script**
-  - [ ] xUnit test project for `RecipeApp.Core` + `backup.sh` archiving `data/recipes.db` and
-        `data/images/`.
+  - [x] Backup script — done early as TICKET_13: WAL-safe `backup.sh` (online hot backup +
+        `images/`, 14-retention, idempotent `--install-cron`), `restore.sh` (validates, pre-restore
+        snapshot, clears `-wal`/`-shm`), and one-click `GET /api/backup` zip download in the sidebar.
+        → `TICKET_13_REPORT.md`.
+  - [ ] xUnit test project for `RecipeApp.Core`.
 
 ---
 
@@ -181,3 +185,14 @@ Institutional knowledge preserved from the deleted `ROADMAP.md`. Detailed, bindi
   `IComparer` does not translate (500). And an entity without a `DbSet<T>` property silently falls
   back to the CLR type name as its table: a clobbered DbSet line once produced a phantom
   `RenameTable "RecipeImages" → "RecipeImage"` migration. Keep DbSet property names intact.
+- **Backups must be WAL-aware (TICKET_13).** The live DB runs in WAL mode, so a plain file copy of
+  `recipes.db` silently drops uncommitted WAL frames. `backup.sh` uses the SQLite online backup API
+  (Python stdlib `sqlite3.Connection.backup()` — no `sqlite3` CLI on the host) and then switches the
+  snapshot to rollback journal mode so each archive holds one self-contained file; restore must delete
+  `-wal`/`-shm` before extracting or SQLite replays stale frames over the restored DB. `GET /api/backup`
+  snapshots with `VACUUM INTO` (no lock, no app stop) and builds the zip to a temp file first —
+  `ZipArchive` flushes synchronously on dispose, which Kestrel's async-only response stream rejects.
+  Bash gotchas hit along the way: under `set -o pipefail`, `tar | grep -q` fails with SIGPIPE (141) when
+  the match is early (use an `awk '… END { exit found ? 0 : 1 }'` that consumes all input), and a
+  command-substitution assignment like `x="$(… | grep -vF …)"` aborts under `set -e` when grep filters
+  everything out — append `|| true`.

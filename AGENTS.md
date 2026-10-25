@@ -59,6 +59,12 @@ docker compose up -d --build        # build image, serve http://0.0.0.0:5051; se
 docker compose run --rm app dotnet RecipeApp.dll seed   # re-seed after regenerating recipes_json (idempotent)
 docker compose down                 # stop; data persists in ./data
 
+# Backups (WAL-mode DB — never cp recipes.db by hand; see TICKET_13_REPORT.md)
+./backup.sh                              # hot backup of data/ → backups/ (retains newest 14)
+./backup.sh --install-cron               # nightly 03:00 user cron job (idempotent)
+./restore.sh backups/<archive>.tar.gz    # pre-restore snapshot, stop, extract, start
+# One-click off-site copy: sidebar "Download Backup" → GET /api/backup (.zip)
+
 # Client
 npm --prefix client install                    # first time
 npm --prefix client run dev                    # Vite dev server (proxies /api → :5051)

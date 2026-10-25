@@ -48,6 +48,7 @@
     <hr style="margin: 20px 0" />
     <a href="/recipes/new" class="button-link" style="text-align: center">Add New Recipe</a>
     <button type="button" class="secondary" style="width: 100%; margin-top: 8px; text-align: center" onclick={() => (importOpen = true)}>Import from URL</button>
+    <a href="/api/backup" download class="secondary" style="display: block; width: 100%; margin-top: 8px">Download Backup</a>
   </aside>
   <main class="App-main-content">
     <input

@@ -2,6 +2,10 @@
 
 Canonical guide for AI coding agents working in this repository. Read `PLAN.md` (canonical plan, status, and backlog) before large changes. This file wins on conflicts with stale docs.
 
+## When Blocked: Ask the User, Don't Work Around It
+
+If you hit a blocker — need `sudo`, a package or tool to install, a missing file or dependency, a permission error, or something failing unexpectedly — **stop and ask the user first**. They can usually resolve it in seconds. Do not improvise silent workarounds (substituting files, vendoring alternatives, skipping steps, deleting things you don't own). Only proceed on your own with changes that are clearly in scope and reversible; anything destructive or environmental goes through the user first.
+
 ## Architecture & Stack
 
 - **Backend:** ASP.NET Core 10 Web API, layered solution in `api/`:

@@ -14,6 +14,7 @@ if (args.Contains("seed"))
         .SetBasePath(AppContext.BaseDirectory)
         .AddJsonFile("appsettings.json", optional: true)
         .AddJsonFile("appsettings.Development.json", optional: true)
+        .AddEnvironmentVariables()
         .Build();
     await SeedData.RunAsync(configuration);
     return;

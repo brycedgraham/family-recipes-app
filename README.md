@@ -5,7 +5,7 @@ aggregated shopping lists (with aisle grouping and shareable read-only links), a
 photos — all served from a single process on your local network as an installable PWA.
 
 **Stack:** ASP.NET Core 10 + EF Core + SQLite · SvelteKit (Svelte 5) SPA · deterministic Python
-ingestion. No containers, no external services.
+ingestion. Optionally deployable as a single Docker container with auto-start on boot.
 
 ## Production launch (one command)
 
@@ -17,6 +17,23 @@ Builds the static SPA (`client/dist`) and the Release API, then runs one .NET pr
 UI, API, SQLite database, and recipe photos at **`http://0.0.0.0:5051`** — reachable from any
 device on your network (phones included). Open it in a mobile browser to install the app
 (`manifest.webmanifest`).
+
+## Docker (auto-start on boot)
+
+```bash
+docker compose up -d --build     # build image, start at http://0.0.0.0:5051
+docker compose logs -f           # follow logs
+docker compose down              # stop (data stays in ./data)
+```
+
+- **Auto-start:** `docker.service` starts at boot and the service's `restart: unless-stopped`
+  policy brings the container back up with it (and after crashes). It only stays down if you
+  explicitly stop it.
+- **Data:** `./data` is bind-mounted to `/data` — the same SQLite DB + recipe images the native
+  `./start.sh` uses, so both deployment modes share one dataset. On first boot with an empty
+  volume the container seeds itself from `recipes_json/`.
+- **Re-seed manually** (e.g. after regenerating `recipes_json/` and rebuilding):
+  `docker compose run --rm app dotnet RecipeApp.dll seed` — idempotent, skips existing titles.
 
 ## Development workflow
 

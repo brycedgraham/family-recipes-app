@@ -1,0 +1,11 @@
+.git
+data/
+client/node_modules/
+client/dist/
+client/.svelte-kit/
+api/**/bin/
+api/**/obj/
+__pycache__/
+.env
+*.md
+start-log.txt

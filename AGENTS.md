@@ -8,7 +8,7 @@ Canonical guide for AI coding agents working in this repository. Read `PLAN.md` 
   - `RecipeApp` — host: DI wiring, controllers, DTOs, seed command.
   - `RecipeApp.Core` — pure domain: models, interfaces, parsing (`IngredientText`). Zero infrastructure dependencies.
   - `RecipeApp.Infrastructure` — EF Core `DbContext`, repositories, migrations.
-- **Database:** **SQLite** at `data/recipes.db` (repo-relative; the API rewrites relative `Data Source` paths against the repo root via `SqliteDatabase.Resolve`). Zero-container local dev — no Docker. Connection string lives in `api/RecipeApp/appsettings.json` under `ConnectionStrings:DefaultConnection`. EF Core migrations remain the schema source of truth — add a new migration when changing the schema; do not hand-edit old ones. (Migrated from PostgreSQL/Npgsql on 2026-10-16; the Npgsql migration was replaced by a fresh SQLite `InitialCreate`.)
+- **Database:** **SQLite** at `data/recipes.db` (repo-relative; the API rewrites relative `Data Source` paths against the repo root via `SqliteDatabase.Resolve`). Local dev is zero-container, but a single-container production deployment exists (`Dockerfile` + `docker-compose.yml`): it bind-mounts `./data` to `/data`, overrides the connection string with an absolute path via `ConnectionStrings__DefaultConnection`, and auto-starts on boot via `restart: unless-stopped`. Connection string lives in `api/RecipeApp/appsettings.json` under `ConnectionStrings:DefaultConnection`. EF Core migrations remain the schema source of truth — add a new migration when changing the schema; do not hand-edit old ones. (Migrated from PostgreSQL/Npgsql on 2026-10-16; the Npgsql migration was replaced by a fresh SQLite `InitialCreate`.)
 - **Frontend:** SvelteKit (Svelte 5) SPA in `client/` — `@sveltejs/adapter-static` with `fallback: 'index.html'`, `export const ssr = false;` in `src/routes/+layout.js`. Plain fetch via `src/lib/api.js`; fraction-aware quantity display via `src/lib/format.js` (mirrors the C# `IngredientText.FormatNumber`). Dev server proxies `/api` → `http://localhost:5051`. In production the .NET API serves the built SPA itself from `client/dist` (unmatched non-API routes fall back to `index.html`; unknown `/api/*` still 404s as JSON) — see `start.sh`. Installable PWA: `client/static/manifest.webmanifest` + icons, linked from `src/app.html`.
 - **Ingestion:** Python 3.12, single script `extract_recipes.py` — deterministic parser, no LLM, no third-party deps.
 
@@ -53,6 +53,11 @@ dotnet test api/RecipeApp.sln                  # no test project exists yet — 
 
 # Production (single process: UI + API + SQLite + images on one port)
 ./start.sh                                 # builds client/dist + Release API, serves http://0.0.0.0:5051
+
+# Docker (single container, auto-starts on boot via docker.service + restart policy)
+docker compose up -d --build        # build image, serve http://0.0.0.0:5051; seeds ./data from recipes_json/ on first boot
+docker compose run --rm app dotnet RecipeApp.dll seed   # re-seed after regenerating recipes_json (idempotent)
+docker compose down                 # stop; data persists in ./data
 
 # Client
 npm --prefix client install                    # first time

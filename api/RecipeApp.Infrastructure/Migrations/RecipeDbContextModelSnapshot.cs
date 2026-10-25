@@ -368,6 +368,28 @@ namespace RecipeApp.Infrastructure.Migrations
                     b.ToTable("ShoppingListItems");
                 });
 
+            modelBuilder.Entity("RecipeApp.Core.Models.Store", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("SortOrder")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Stores");
+                });
+
             modelBuilder.Entity("RecipeCategories", b =>
                 {
                     b.Property<Guid>("CategoriesId")

@@ -109,6 +109,9 @@ public static class SeedData
             }
         }
 
+        // Ensure the default stores + any store names assigned by this or prior seeding exist in Stores.
+        await IngredientBackfill.EnsureStoresAsync(db);
+
         Console.WriteLine($"\nSeeding complete: {added} added, {skipped} skipped, {failed} failed ({files.Count()} files in {jsonDir}).");
     }
 

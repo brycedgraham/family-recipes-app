@@ -120,11 +120,21 @@ dotnet run --project api/RecipeApp -- seed        # idempotent import of recipes
       button + `@media print` CSS hiding nav, action rows, modals, and gallery chrome. →
       `TICKET_8_REPORT.md`.
 
+- [x] **Deliverable 10: First-Class Store Management** — `Stores` table (case-insensitively unique
+  `Name` via a raw-SQL NOCASE index — EF 10 has no fluent collation API); startup/seed-time
+  registration of the default stores plus every store name already in use
+  (`IngredientBackfill.EnsureStoresAsync`); `POST /api/stores` (trim, 1–50 chars, case-insensitive
+  duplicate no-op) and `DELETE /api/stores/{name}` (nulls matching list items + ingredient
+  preferences) both return the updated store list; Svelte 5 UI: `+ Store` inline input in the store
+  bar (Enter submits, Escape cancels, new tab auto-selected), subtle `×` delete on the active store
+  tab (confirm → unassign → refetch), and the per-item store pill is now a `<select>` with a
+  `+ New store…` option. → `TICKET_12_REPORT.md`.
+
 ---
 
 ## 4. Upcoming Deliverables Backlog
 
-- [ ] **Deliverable 10: Automated Unit Tests (`RecipeApp.Tests`) & Backup Script**
+- [ ] **Deliverable 11: Automated Unit Tests (`RecipeApp.Tests`) & Backup Script**
   - [ ] xUnit test project for `RecipeApp.Core` + `backup.sh` archiving `data/recipes.db` and
         `data/images/`.
 
@@ -164,3 +174,10 @@ Institutional knowledge preserved from the deleted `ROADMAP.md`. Detailed, bindi
   `UseRouting()`, which must come before `MapControllers`. (Found during TICKET_5 E2E.)
 - **Dev vs prod parity.** The Vite dev proxy forwards `/api` → :5051, so images and API behave
   identically in dev and production.
+- **EF Core 10 API removals (TICKET_12).** `PropertyBuilder.HasCollation` is gone (no public
+  `UseCollation` either) — case-insensitive uniqueness on SQLite needs a raw-SQL per-index-column
+  collation (`CREATE UNIQUE INDEX … ("Name" COLLATE NOCASE)`). `EF.Functions.ToLower(string)` /
+  `ToLowerInvariant` were removed too — match in memory at this data scale. `OrderBy/ThenBy` with an
+  `IComparer` does not translate (500). And an entity without a `DbSet<T>` property silently falls
+  back to the CLR type name as its table: a clobbered DbSet line once produced a phantom
+  `RenameTable "RecipeImages" → "RecipeImage"` migration. Keep DbSet property names intact.

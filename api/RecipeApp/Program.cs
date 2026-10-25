@@ -59,6 +59,8 @@ using (var scope = app.Services.CreateScope())
     await db.Database.MigrateAsync();
     // Backfill store / pantry-staple defaults for ingredients seeded before that support existed.
     await RecipeApp.Infrastructure.Data.IngredientBackfill.ApplyDefaultsAsync(db);
+    // Ensure the default stores + any already-assigned store names exist in the Stores table.
+    await RecipeApp.Infrastructure.Data.IngredientBackfill.EnsureStoresAsync(db);
 }
 if (app.Environment.IsDevelopment())
 {

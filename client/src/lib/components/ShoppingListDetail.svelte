@@ -7,6 +7,8 @@
     clearCheckedShoppingItems,
     deleteShoppingListItem,
     fetchStores,
+    createStore,
+    deleteStore,
   } from '#lib/api.js';
   import ShoppingListItemRow from './ShoppingListItemRow.svelte';
 
@@ -21,6 +23,8 @@
   // 'all' | 'unassigned' | a store name
   let storeFilter = $state('all');
   let pantryOpen = $state(true);
+  let addingStore = $state(false);
+  let newStoreName = $state('');
 
   $effect(() => {
     let cancelled = false;
@@ -117,23 +121,65 @@
     }
   }
 
-  // One tap cycles unassigned → each known store → back to unassigned.
-  function nextStore(current) {
-    const cycle = [null, ...displayStores];
-    const idx = current ? cycle.indexOf(current) : 0;
-    return cycle[(idx + 1) % cycle.length];
-  }
-
-  async function handleCycleStore(item) {
-    const next = nextStore(item.store);
-    setItem(item.id, { store: next });
+  // Assign/unassign a store on an item; also remembers this ingredient's default for future lists.
+  async function handleSetStore(item, store) {
+    setItem(item.id, { store });
     try {
-      // "" clears on the wire (JSON null would mean "not sent"). The server also remembers this
-      // ingredient's default store for future weekly lists.
-      list = await patchShoppingListItem(listId, item.id, { store: next ?? '' });
+      // "" clears on the wire (JSON null would mean "not sent").
+      list = await patchShoppingListItem(listId, item.id, { store: store ?? '' });
     } catch (err) {
       setItem(item.id, { store: item.store });
       alert(`Update failed: ${err.message}`);
+    }
+  }
+
+  // Row-level "+ New store…": prompt for a name, register it, then assign it to the item.
+  async function handleNewStore(item) {
+    const name = window.prompt('New store name:')?.trim();
+    if (!name) return;
+    busy = true;
+    try {
+      stores = await createStore(name);
+      list = await patchShoppingListItem(listId, item.id, { store: name });
+    } catch (err) {
+      alert(`Store update failed: ${err.message}`);
+      const fresh = await fetchStores().catch(() => null); // resync in case the create itself succeeded
+      if (Array.isArray(fresh)) stores = fresh;
+    } finally {
+      busy = false;
+    }
+  }
+
+  // Store-bar "+ Store": register a store and jump to its tab.
+  async function handleCreateStore(e) {
+    e.preventDefault();
+    const name = newStoreName.trim();
+    if (!name) return;
+    busy = true;
+    try {
+      stores = await createStore(name);
+      addingStore = false;
+      newStoreName = '';
+      storeFilter = name;
+    } catch (err) {
+      alert(`Create failed: ${err.message}`);
+    } finally {
+      busy = false;
+    }
+  }
+
+  async function handleDeleteStore(store) {
+    if (!window.confirm(`Remove store "${store}"? Items assigned to it will become unassigned.`)) return;
+    busy = true;
+    try {
+      stores = await deleteStore(store);
+      if (storeFilter === store) storeFilter = 'all';
+      // Items were unassigned server-side — refetch so the UI reflects that.
+      list = sharedToken ? await fetchSharedShoppingList(sharedToken) : await fetchShoppingList(listId);
+    } catch (err) {
+      alert(`Delete failed: ${err.message}`);
+    } finally {
+      busy = false;
     }
   }
 
@@ -218,10 +264,35 @@
         <button type="button" class:active={storeFilter === store} onclick={() => (storeFilter = store)}>
           {store} ({storeCounts[store] ?? 0})
         </button>
+        {#if !readOnly && storeFilter === store}
+          <button
+            type="button"
+            class="sl-store-del"
+            title={`Remove store "${store}"? Items assigned to it will become unassigned.`}
+            disabled={busy}
+            onclick={() => handleDeleteStore(store)}
+          >&times;</button>
+        {/if}
       {/each}
       <button type="button" class:active={storeFilter === 'unassigned'} onclick={() => (storeFilter = 'unassigned')}>
         Any / Unassigned ({storeCounts.unassigned})
       </button>
+      {#if !readOnly}
+        {#if addingStore}
+          <form class="sl-store-add" onsubmit={handleCreateStore}>
+            <input
+              type="text"
+              placeholder="Store name..."
+              maxlength="50"
+              bind:value={newStoreName}
+              onkeydown={(e) => { if (e.key === 'Escape') { addingStore = false; newStoreName = ''; } }}
+            />
+            <button type="submit" disabled={busy || !newStoreName.trim()}>Add</button>
+          </form>
+        {:else}
+          <button type="button" class="sl-store-add-toggle" onclick={() => (addingStore = true)}>+ Store</button>
+        {/if}
+      {/if}
     </div>
 
     {#each groups as [category, items] (category)}
@@ -235,7 +306,9 @@
               busy={busy}
               onToggle={handleToggle}
               onDelete={handleDeleteItem}
-              onCycleStore={handleCycleStore}
+              stores={displayStores}
+              onSetStore={handleSetStore}
+              onNewStore={handleNewStore}
               onTogglePantry={handleTogglePantry}
             />
           {/each}
@@ -259,7 +332,9 @@
                 busy={busy}
                 onToggle={handleToggle}
                 onDelete={handleDeleteItem}
-                onCycleStore={handleCycleStore}
+                stores={displayStores}
+                onSetStore={handleSetStore}
+                onNewStore={handleNewStore}
                 onTogglePantry={handleTogglePantry}
               />
             {/each}

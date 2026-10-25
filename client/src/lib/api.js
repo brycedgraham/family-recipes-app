@@ -42,6 +42,16 @@ export function fetchStores() {
   return request('/stores');
 }
 
+// Register a new store; returns the updated list of known stores.
+export function createStore(name) {
+  return request('/stores', { method: 'POST', body: JSON.stringify({ name }) });
+}
+
+// Remove a registered store (items/ingredients assigned to it become unassigned); returns the updated list.
+export function deleteStore(name) {
+  return request(`/stores/${encodeURIComponent(name)}`, { method: 'DELETE' });
+}
+
 export function createRecipe(payload) {
   return request('/recipes', { method: 'POST', body: JSON.stringify(payload) });
 }

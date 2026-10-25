@@ -18,6 +18,7 @@ public class RecipeDbContext : DbContext
     public DbSet<MealPlan> MealPlans => Set<MealPlan>();
     public DbSet<MealPlanEntry> MealPlanEntries => Set<MealPlanEntry>();
     public DbSet<RecipeImage> RecipeImages => Set<RecipeImage>();
+    public DbSet<Store> Stores => Set<Store>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -150,6 +151,12 @@ public class RecipeDbContext : DbContext
                 .WithMany(r => r.Images)
                 .HasForeignKey(i => i.RecipeId)
                 .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        // Store (registered store names; case-insensitive uniqueness via a NOCASE unique index — see AddStoresTable migration)
+        modelBuilder.Entity<Store>(entity =>
+        {
+            entity.Property(s => s.Name).HasMaxLength(50).IsRequired();
         });
 
         // Recipe-Category many-to-many

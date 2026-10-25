@@ -72,27 +72,63 @@ public class ShoppingListRepository : IShoppingListRepository
 
     public async Task<IReadOnlyList<string>> GetKnownStoresAsync(CancellationToken cancellationToken = default)
     {
-        var fromItems = await _context.ShoppingListItems
-            .Where(i => i.Store != null)
-            .Select(i => i.Store!)
-            .Distinct()
+        // Registered stores first (canonical order), then any ad-hoc names still on items or ingredients that are not registered.
+        var result = await _context.Stores
+            .OrderBy(s => s.SortOrder)
+            .ThenBy(s => s.Name)
+            .Select(s => s.Name)
             .ToListAsync(cancellationToken);
-        var fromIngredients = await _context.Ingredients
-            .Where(i => i.PreferredStore != null)
-            .Select(i => i.PreferredStore!)
+
+        var adHoc = await _context.ShoppingListItems.Where(i => i.Store != null).Select(i => i.Store!)
+            .Concat(_context.Ingredients.Where(i => i.PreferredStore != null).Select(i => i.PreferredStore!))
+            .Where(s => !string.IsNullOrWhiteSpace(s))
+            .Select(s => s.Trim())
             .Distinct()
             .ToListAsync(cancellationToken);
 
-        // Default stores first (in their canonical order), then any custom names, alphabetically.
-        var result = IngredientDefaults.DefaultStores.ToList();
-        foreach (var name in fromItems.Concat(fromIngredients)
-                     .Where(s => !string.IsNullOrWhiteSpace(s))
-                     .Select(s => s.Trim())
-                     .Distinct(StringComparer.OrdinalIgnoreCase)
+        foreach (var name in adHoc.Where(s => !result.Contains(s, StringComparer.OrdinalIgnoreCase))
                      .OrderBy(s => s, StringComparer.OrdinalIgnoreCase))
         {
-            if (!result.Contains(name, StringComparer.OrdinalIgnoreCase)) result.Add(name);
+            result.Add(name);
         }
         return result;
+    }
+
+    public async Task<IReadOnlyList<string>> CreateStoreAsync(string name, CancellationToken cancellationToken = default)
+    {
+        var trimmed = name.Trim();
+        var existing = await _context.Stores.ToListAsync(cancellationToken);
+        // Case-insensitive uniqueness; the NOCASE unique index is the backstop.
+        if (!existing.Any(s => string.Equals(s.Name, trimmed, StringComparison.OrdinalIgnoreCase)))
+        {
+            var nextOrder = existing.Count > 0 ? existing.Max(s => s.SortOrder) + 1 : 0;
+            _context.Stores.Add(new Store { Name = trimmed, SortOrder = nextOrder, CreatedAt = DateTime.UtcNow });
+            await _context.SaveChangesAsync(cancellationToken);
+        }
+        return await GetKnownStoresAsync(cancellationToken);
+    }
+
+    public async Task<IReadOnlyList<string>> DeleteStoreAsync(string name, CancellationToken cancellationToken = default)
+    {
+        var trimmed = name.Trim();
+
+        var store = (await _context.Stores.ToListAsync(cancellationToken))
+            .FirstOrDefault(s => string.Equals(s.Name, trimmed, StringComparison.OrdinalIgnoreCase));
+        if (store is not null) _context.Stores.Remove(store);
+
+        // Unassign anything pointing at this store (case-insensitive) so no row references a deleted store.
+        // Matched in memory: the data set is small and EF 10 has no translatable case-insensitive equality.
+        foreach (var item in await _context.ShoppingListItems.Where(i => i.Store != null).ToListAsync(cancellationToken))
+        {
+            if (string.Equals(item.Store, trimmed, StringComparison.OrdinalIgnoreCase)) item.Store = null;
+        }
+
+        foreach (var ingredient in await _context.Ingredients.Where(i => i.PreferredStore != null).ToListAsync(cancellationToken))
+        {
+            if (string.Equals(ingredient.PreferredStore, trimmed, StringComparison.OrdinalIgnoreCase)) ingredient.PreferredStore = null;
+        }
+
+        await _context.SaveChangesAsync(cancellationToken);
+        return await GetKnownStoresAsync(cancellationToken);
     }
 }

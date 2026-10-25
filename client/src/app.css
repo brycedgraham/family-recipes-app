@@ -36,13 +36,13 @@
   --bark-text: #ece2cf; /* Warm parchment text on bark */
   --bark-text-dim: #c8bca4;
   --bark-edge: #241a13;
-  --bark-texture:
-    repeating-linear-gradient(90deg, rgba(0, 0, 0, 0.22) 0px, rgba(0, 0, 0, 0.22) 1px, transparent 1px, transparent 5px, rgba(255, 214, 170, 0.05) 5px, rgba(255, 214, 170, 0.05) 6px, transparent 6px, transparent 13px),
-    repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.03) 0px, rgba(255, 255, 255, 0.03) 7px, rgba(0, 0, 0, 0.06) 7px, rgba(0, 0, 0, 0.06) 15px, transparent 15px, transparent 27px);
+  --bark-photo: url('/textures/bark.webp'); /* Real Ponderosa bark photo (Ticket 11) */
+  --bark-overlay: linear-gradient(rgba(32, 20, 14, 0.50), rgba(24, 15, 10, 0.65));
 }
 
 [data-theme="dark"] {
   /* Deep pine needle & charred timber dark theme (Ticket 10) */
+  --bark-overlay: linear-gradient(rgba(18, 12, 9, 0.62), rgba(14, 9, 7, 0.76)); /* Deeper umber on dark theme (Ticket 11) */
   --bg-app: #1a221d;
   --bg-surface: #242e27;
   --hover-bg: #2c3830;
@@ -289,9 +289,11 @@ label {
   width: 280px; /* Slightly wider sidebar */
   flex-shrink: 0; /* Never let the main column crush the sidebar */
   padding: 20px;
-  /* Pine bark panel (Ticket 10) */
+  /* Pine bark panel (Ticket 10; real Ponderosa bark photo, Ticket 11) */
   background-color: var(--bark-base);
-  background-image: var(--bark-texture), linear-gradient(180deg, #3a2b21 0%, var(--bark-base) 45%, #2b1e17 100%);
+  background-image: var(--bark-overlay), var(--bark-photo);
+  background-size: cover;
+  background-position: center;
   border-right: 1px solid var(--bark-edge);
   box-shadow: inset -10px 0 14px -10px rgba(0, 0, 0, 0.65), inset 1px 0 0 rgba(255, 220, 180, 0.07);
   color: var(--bark-text); /* Warm parchment text on bark */
@@ -628,6 +630,7 @@ label {
   border-bottom: 1px solid rgba(236, 226, 207, 0.14); /* Subtle separator on bark */
   font: inherit;
   color: inherit;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.7); /* Legibility over bark photo (Ticket 11) */
   text-align: left;
   transition: background-color 0.2s ease, color 0.2s ease;
   font-size: 1rem;
@@ -751,7 +754,9 @@ label {
   gap: 8px;
   padding: 10px 16px;
   background-color: var(--bark-base);
-  background-image: var(--bark-texture), linear-gradient(180deg, #3a2b21 0%, var(--bark-base) 45%, #2b1e17 100%);
+  background-image: var(--bark-overlay), var(--bark-photo);
+  background-size: cover;
+  background-position: center;
   border-bottom: 1px solid var(--bark-edge);
   box-shadow: inset 0 -8px 12px -10px rgba(0, 0, 0, 0.65), 0 1px 3px rgba(0, 0, 0, 0.25);
   position: sticky;
@@ -761,6 +766,7 @@ label {
 
 .App-topnav a {
   color: var(--bark-text-dim);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.7); /* Legibility over bark photo (Ticket 11) */
   text-decoration: none;
   font-weight: 600;
   padding: 6px 12px;

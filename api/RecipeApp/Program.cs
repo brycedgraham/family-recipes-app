@@ -73,8 +73,11 @@ if (!Directory.Exists(spaDirectory)) spaDirectory = null;
 if (spaDirectory is not null)
 {
     var spaProvider = new PhysicalFileProvider(spaDirectory);
+    // .webmanifest is missing from the default extension map; Android Chrome requires application/manifest+json.
+    var spaContentTypes = new FileExtensionContentTypeProvider();
+    spaContentTypes.Mappings[".webmanifest"] = "application/manifest+json";
     app.UseDefaultFiles(new DefaultFilesOptions { FileProvider = spaProvider, DefaultFileNames = ["index.html"] });
-    app.UseStaticFiles(new StaticFileOptions { FileProvider = spaProvider });
+    app.UseStaticFiles(new StaticFileOptions { FileProvider = spaProvider, ContentTypeProvider = spaContentTypes });
 }
 
 app.UseStaticFiles(new StaticFileOptions

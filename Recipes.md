@@ -1,346 +1,3 @@
-Tried and True Recipes
-
-[Breakfast](#breakfast)
-
-[Thin Pancakes](#graham-thin-pancakes)
-
-[Yeggy German Pancakes](#yeggy-german-pancakes)
-
-[Apple Butter Pancakes](#apple-butter-pancakes)
-
-[Banana Pancakes](#banana-pancakes)
-
-[French Toast](#french-toast)
-
-[Biscuits and Gravy](#biscuits-and-gravy)
-
-[Breakfast Burritos](#breakfast-burritos)
-
-[Basil Scramble](#basil-scramble)
-
-[Eggs Benedict](#eggs-benedict)
-
-[Eggy in a Basket](#eggy-in-a-basket)
-
-[Fire (Fried) Potatoes](#fire-\(fried\)-potatoes)
-
-[Soups](#soups)
-
-[Cauliflower/Broccoli Soup](#cauliflower/broccoli-soup)
-
-[Ham Veggie Chowder](#ham-veggie-chowder)
-
-[Taco Soup](#taco-soup)
-
-[Tomato Vegetable](#tomato-vegetable)
-
-[Corn Chowder](#corn-chowder)
-
-[Potato Bacon (Instant Pot)](#potato-bacon-\(instant-pot\))
-
-[Beef Stew](#beef-stew)
-
-[Grandma Maryn’s Hamburger Soup](#grandma-maryn’s-hamburger-soup)
-
-[Chicken Noodle](#chicken-noodle)
-
-[Hobbit Soup](#hobbit-soup)
-
-[Goulash](#goulash)
-
-[Pastas](#pastas)
-
-[Alfredo](#alfredo)
-
-[Creamy Tomato](#creamy-tomato)
-
-[Garlic Pasta](#garlic-pasta)
-
-[Lemon Pasta](#lemon-pasta)
-
-[Mushroom Pasta](#mushroom-pasta)
-
-[Cajun Pasta](#cajun-pasta)
-
-[Spinach Orzo](#spinach-orzo)
-
-[Cheater Chicken Parmesan](#cheater-chicken-parmesan)
-
-[Marzetti](#marzetti)
-
-[Zucchini Lasagna Rolls](#zucchini-lasagna-rolls)
-
-[Dutch Oven Lasagna](#dutch-oven-lasagna)
-
-[Garlic Parmesan Spaghetti](#garlic-parmesan-spaghetti)
-
-[Chicken and Bows](#chicken-and-bows)
-
-[Audrey’s Spaghetti al Pomodoro](#audrey’s-spaghetti-al-pomodoro)
-
-[Veggie Spaghetti](#veggie-spaghetti)
-
-[Mac and Cheese Variations](#mac-and-cheese-variations)
-
-Stuffed Sweet Potato
-
-[Chinese](#chinese)
-
-[Baozi Pork Asado Siopao (takes minimum 3 hours)](#baozi-pork-asado-siopao-\(takes-minimum-3-hours\))
-
-[Bourbon Chicken](#bourbon-chicken)
-
-[Broccoli Beef/Chicken/Stir Fry](#broccoli-beef/chicken/stir-fry)
-
-[Chicken Bok Choy](#chicken-bok-choy)
-
-[Tomato Egg](#tomato-egg)
-
-[Egg Drop Soup](#egg-drop-soup)
-
-[Pork Egg Rolls](#pork-egg-rolls)
-
-[Fried Rice](#fried-rice)
-
-[Mexican](#mexican)
-
-[Mom’s (Pattie’s) White Enchiladas](#mom’s-\(pattie’s\)-white-enchiladas)
-
-[Taco Salad](#taco-salad)
-
-[Cilantro Lime Rice](#cilantro-lime-rice)
-
-[Chicken Taquitos](#chicken-taquitos)
-
-[Nachos](#nachos)
-
-[Chicken and Fish](#chicken-and-fish)
-
-[Fajita Chicken Salad](#fajita-chicken-salad)
-
-[Lemon Chicken](#lemon-chicken)
-
-[Seasoned Chicken](#seasoned-chicken)
-
-Chicken Pot Pie
-
-[Cheater Chicken Pot Pie](#cheater-chicken-pot-pie)
-
-[Firecracker Salmon](#firecracker-salmon)
-
-[Heavenly Parm Halibut](#heavenly-parm-halibut)
-
-[Dinner in a Pumpkin](#dinner-in-a-pumpkin)
-
-[Beef and Pork](#beef-and-pork)
-
-[Pineapple Ginger Steak](#pineapple-ginger-steak)
-
-[Meatloaf](#meatloaf)
-
-[Meatloaf Roll](#meatloaf-roll)
-
-[Shepherd’s Pie](#shepherd’s-pie)
-
-[Hotdog Hushpuppies](#hotdog-hushpuppies)
-
-[Pioneer Woman Steak](#pioneer-woman-steak)
-
-[BBQ Ham Slices](#bbq-ham-slices)
-
-[Garlic Roast](#garlic-roast)
-
-[Dr. Pepper Roast](#dr.-pepper-roast)
-
-[Garlic Peppercorn Burgers](#garlic-peppercorn-burgers)
-
-[One-Pan Ranch Pork Chops](#one-pan-ranch-pork-chops)
-
-[Navajo Tacos](#navajo-tacos)
-
-[Sloppy Joes](#sloppy-joes)
-
-[French Dip](#french-dip)
-
-[Sausage Casserole](#sausage-casserole)
-
-[Bangers and Mash](#bangers-and-mash)
-
-[Sides and Sauces](#sides-and-sauces)
-
-[Baked French Fries](#baked-french-fries)
-
-[Holiday Potatoes](#holiday-potatoes)
-
-[Couscous](#couscous)
-
-[Baked Cauliflower](#baked-cauliflower)
-
-[Roasted Chicken Garlic Potatoes](#roasted-chicken-garlic-potatoes)
-
-[Mozzarella Sticks](#mozzarella-sticks)
-
-[Green Bean Casserole](#green-bean-casserole)
-
-[Creamy Cilantro Ranch (Taquitos)](#creamy-cilantro-ranch-\(taquitos\))
-
-[Garlic Butter](#garlic-butter)
-
-[Turkey Giblet Gravy](#turkey-giblet-gravy)
-
-[Preserves](#preserves)
-
-[Grandma Maryn’s Chokecherry Syrup](#grandma-maryn’s-chokecherry-syrup)
-
-[Chokecherry Juice](#chokecherry-juice)
-
-[Cranberry Christmas Slush](#cranberry-christmas-slush)
-
-1. Breakfast   
-   1. Thin Pancakes  
-   2. German Pancakes  
-   3. Apple Butter Pancakes  
-   4. Banana Pancakes  
-   5. French Toast  
-   6. Biscuits and Gravy  
-   7. Breakfast Burritos  
-   8. Basil Scramble  
-   9. Eggs Benedict  
-   10. Eggy in a Basket  
-   11. Fire (Fried) Potatoes  
-2. Soup  
-   1. Cauliflower/Broccoli Soup  
-   2. Ham Chowder  
-   3. Taco Soup  
-   4. Tomato Vegetable  
-   5. Corn Chowder  
-   6. Potato Bacon   
-   7. Beef Stew  
-   8. Maryn’s Hamburger Soup  
-   9. Chicken Noodle  
-   10. Creamy Tomato Basil  
-   11. Hobbit Soup  
-   12. Roasted Garlic and Asparagus  
-   13. Irish Potato Leek Soup  
-   14. Goulash  
-3. Pasta  
-   1. Alfredo  
-   2. Creamy Tomato  
-   3. Garlic Pasta  
-   4. Lemon Pasta  
-   5. Mushroom Pasta  
-   6. Cajun Pasta  
-   7. Spinach Orzo  
-   8. Zucchini Lasagna Rolls  
-   9. Dutch Oven Lasagna   
-   10. Cheater Chicken Parmesan  
-   11. Stroganoff  
-   12. Dad’s Pasta  
-   13. Mom’s Pasta  
-   14. Marzetti   
-   15. Garlic Parmesan Spaghetti  
-   16. Chicken and Bows  
-   17. Audrey’s Spaghetti al Pomodoro  
-   18. Veggie Spaghetti  
-   19. Tuna Casserole  
-   20. Mac and Cheese Variations  
-4. Chinese  
-   1. Baozi Pork Asado Siopao  
-   2. Bourbon Chicken  
-   3. Broccoli Beef  
-   4. Chicken Bok choy  
-   5. Tomato Egg  
-   6. Egg Drop Soup  
-   7. Pot stickers  
-   8. Pork Egg Rolls  
-   9. Fried Rice  
-   10. Spring Rolls  
-   11. Broccoli with Garlic Sauce  
-   12. Orange Chicken  
-5. Mexican   
-   1. White Enchiladas  
-   2. Tacos  
-   3. Taco Salad  
-   4. Cilantro Lime Rice  
-   5. Chicken Taquitos   
-   6. Nachos  
-   7. Street Tacos  
-6. Chicken and Fish  
-   1. Fajita Chicken Salad  
-   2. Lemon Chicken  
-   3. Seasoned Chicken  
-   4. Chicken Pot Pie  
-   5. Cheater Chicken Pot Pie  
-   6. Baked Lemon Garlic Fish  
-   7. Pan Fried Salmon Variations  
-   8. Firecracker Salmon  
-   9. Heavenly Parm Halibut  
-   10. Stuffing Chicken  
-   11. Tuna Sandwich  
-   12. Tuna Melt  
-   13. Cilantro and Lime Salmon  
-   14. Basil Lemon Chicken  
-   15. Leftover Turkey and Noodles  
-   16. Salmon with Lemon Garlic Cream Sauce  
-7. Beef, Pork, Wild Game  
-   1. Pineapple Ginger Steak  
-   2. Meatloaf   
-   3. Meatloaf Roll  
-   4. Shepherd’s Pie  
-   5. Hotdog Hushpuppies  
-   6. Pioneer Woman Steak  
-   7. BBQ Pork  
-   8. Minced Beef Wellington  
-   9. Roast Handpies  
-   10. Garlic Roast  
-   11. Dr. Pepper Roast  
-   12. Garlic Peppercorn Burgers  
-   13. One-Pan Ranch Pork Chops  
-   14. Navajo Tacos  
-   15. Sloppy Joes  
-   16. French Dip  
-   17. Sausage Casserole  
-   18. Bangers and Mash  
-   19. Liver and Onions  
-   20. Homemade Pizza  
-   21. Pizza Buns/Bagels  
-8. Sides and Sauce  
-   1. Baked French Fries  
-   2. Garlic French Fries  
-   3. Grilled Zucchini  
-   4. Holiday Potatoes  
-   5. Cous Cous  
-   6. Baked Cauliflower  
-   7. Garlic Baked Potatoes  
-   8. Summer Vegetable Tian  
-   9. Mozzerela Sticks  
-   10. Green Bean Casserole  
-   11. Creamy Cilantro Ranch (Taquitoes)  
-   12. Garlic Butter  
-   13. Steamed Artichokes  
-   14. Garlic Cabbage  
-   15. Pretzel Salad  
-   16. Kaylene’s Baked Beans  
-   17.  Baked Spinach Artichoke Dip  
-   18. Lemon Basil Pesto  
-   19. Turkey Giblet Gravy  
-   20. Mushroom Risotto  
-   21. Garlic Parm Red Potatoes  
-9. Preserves  
-   1. Chokecherry Syrup  
-   2. Chokecherry Juice  
-   3. Strawberry Rhubarb Jam  
-   4. Grandma Dixon’s Jams  
-   5. Grandma’s Pickles  
-   6. Apple Butter  
-   7. Canned Apples/Pears  
-   8. Applesauce  
-   9. Buttermilk Syrup  
-   10. Cranberry Christmas Slush
-
-     
-
-
 # **Breakfast**  {#breakfast}
 
 ## Graham Thin Pancakes {#graham-thin-pancakes}
@@ -690,8 +347,6 @@ freshly cracked pepper to taste
 1/4 cup grated Parmesan    
 1/2 9 oz. bag fresh spinach 
 
-### 
-
 Boil water, add pasta and cook until tender (7-10) minutes. Drain the pasta in a colander.
 
 While waiting for the pasta to cook, dice the onion and mince the garlic. Cook both in a large skillet with the olive oil over medium-low heat until softened and transparent (about 5 minutes).
@@ -807,12 +462,6 @@ Breaded Chicken Burger Patties
 Parmesan
 
 Prepare sauce and noodles like regular spaghetti. While noodles are cooking, make the chicken patties. They need to be crispy in the oven or the spaghetti sauce will soak in and make them slimy.
-
-Stroganoff
-
-Dad’s Pasta
-
-Mom’s Pasta
 
 ## Marzetti  {#marzetti}
 
@@ -934,8 +583,6 @@ Olives
 Zuccini
 
 Start cooking noodles. Cut up the zuccini into ¼ inch thick triangles. Toss sauce, zucchini, and olives into a pan and heat until the zucchini is semi translucent. 
-
-Tuna Casserole
 
 ## Mac and Cheese Variations {#mac-and-cheese-variations}
 
@@ -1290,10 +937,6 @@ Lightly grease a 12-cup muffin tin and place the Pillsbury biscuits into each cu
 Evenly spoon the pot pie mixture into each biscuit cup. Slide into the oven and bake for about 15 minutes. Check at the 12 minute mark.  
 Let rest for about 3 minutes and dig in\!
 
-Baked Lemon Garlic Fish
-
-Pan Fried Salmon Variations
-
 ## Firecracker Salmon {#firecracker-salmon}
 
 2 lbs. salmon fillets  
@@ -1321,19 +964,7 @@ Mix all ingredients and add salmon fillets to mixture.  Marinate overnight and t
 3 Tb. mayonnaise  
 Mix all ingredients except halibut.  Grease a baking dish and arrange fillets in dish.  Broil fillets on high for 8 minutes, or until easily flaked with a fork.  Spread parmesan cheese mixture over fillets and continue to broil for an additional two minutes, or until topping is bubbly and light brown.
 
-Stuffing Chicken
-
-Tuna Sandwich
-
-Tuna Melt
-
-Cilantro and Lime Salmon
-
-Basil Lemon Chicken
-
-Leftover Turkey and Noodles
-
-Salmon with Lemon Garlic Cream Sauce
+## Salmon with Lemon Garlic Cream Sauce {#salmon-with-lemon-garlic-cream-sauce}
 
 FOR THE SALMON  
 2 tablespoons olive oil  
@@ -1555,16 +1186,15 @@ Serve immediately, garnished with parsley, if desired.
 ## Navajo Tacos {#navajo-tacos}
 
 Bread Dough:  
-*1 Tbs yeast*  
-*1/4 warm water*  
-*1/4-1/2 Tbs sugar*  
+1 Tbs yeast  
+1/4 warm water  
+1/4-1/2 Tbs sugar  
 2 cups water/milk (one of each, mixed and warmed to lukewarm)  
 1/4 c oil  
 1/4 c sugar  
 1 tsp salt  
 4-5 c flour  
-Toppings:  
-Chili, tomatoes, onions, cheese, shredded lettuce. OR jam, apple butter, honey, butter and cinnamon sugar...
+Toppings: Chili, tomatoes, onions, cheese, shredded lettuce. OR jam, apple butter, honey, butter and cinnamon sugar...  
 
 Activate the yeast in a small cup with the water and sugar (first 3 ingredients) and allow to work until at least doubled or to top of rainbow cup. Add all remaining ingredients to a large bowl minus flour and including activated yeast. add one cup of flour at a time until dough isn’t wet/super sticky to touch. Cover the bowl with a cloth and allow to rise 30 minutes.  
 Pinch off chunks and form into disks as flat as you can, size depending on preference and fry in heated oil until each side is light gold. cover in chili and toppings or jam, honey, cinnamon sugar, etc… 
@@ -1584,14 +1214,14 @@ Serve on buns and with your favorite sides.
 
 ## French Dip {#french-dip}
 
-3 lb beef chuck roast trimmed of excess fat\*  
+3 lb beef chuck roast trimmed of excess fat  
 1 tablespoon olive oil  
 6 French rolls or hoagie buns  
 12 slices provolone cheese  
-**Slow Cooker**  
+Slow Cooker  
 1/3 cup reduced sodium soy sauce  
 1 cup Coke NOT diet  
-2 10.5 oz. cans beef consommé \*\*  
+2 10.5 oz. cans beef consommé  
 1/4 cup dry minced onions  
 1 tablespoon beef bouillon  
 1 teaspoon garlic powder or more  
@@ -1642,12 +1272,6 @@ Peel and dice potatoes. Cover with water and add salt. Bring to a boil and simme
 
 Drain the potatoes and mash with a potato masher or a fork. Don’t over-mash\! You want them to only be slightly mashed. Add the cream, butter, sour cream and mustard. Season with salt and pepper. Serve with sausages with a side of mustard for dipping.
 
-Liver and Onions
-
-Homemade Pizza
-
-Pizza Buns/Bagels
-
 # **Sides and Sauces** {#sides-and-sauces}
 
 ## Baked French Fries {#baked-french-fries}
@@ -1666,10 +1290,6 @@ Directions:
 4\. Grab those potato slices and bring them back into the bowl and again using your hands toss them in the seasoning rub. Smoosh it around and mix it up and do your best to get a nice layer of that goodness all over the potato.  
 5\. Pam Spray the heck out of a baking sheet, don’t be shy on this one – and DON’T think you’re clever and put some aluminum foil on top of your baking sheet to save on the clean up. It won’t work this time. Trust me.  
 6\. Put your seasoned potato slices on your Pam Sprayed baking sheet and toss it in the oven for about 30 minutes. About half way through you need to grab a spatula and mix up the slices so that they can bake on both sides.  And keep an eye on them for when they’re done. If you sliced them thinly, they may finish in 25 minutes, if you sliced them thicker, they will take longer. If you sliced them poorly and have some skinny and some fat…well…you’ll have some extra crispy fries and some a little less done
-
-Grilled Zucchini
-
-Zucchini Tomato Saute
 
 ## Holiday Potatoes {#holiday-potatoes}
 
@@ -1718,9 +1338,7 @@ Pepper to taste
 
 Place potatoes in a greased 13-in. x 9-in. baking pan. Combine chicken stock, garlic powder and pepper; pour over potatoes. Dot with butter. Cover and bake at 400° for 1 hour and 15 minutes. Remove cover during last 15 minutes to brown.
 
-Garlic Baked Potatoes
-
-Garlic Parm Red Potatoes
+## Garlic Parm Red Potatoes {#garlic-parm-red-potatoes}
 
 Small red potatoes, quartered into wedges (enough to cover normal cookie sheet)  
 3 Tbsp olive oil  
@@ -1736,8 +1354,6 @@ INSTRUCTIONS:
 Preheat oven to 375 degrees.  
 In a large bowl, toss potatoes with olive oil, seasonings and parmesan. Toss until potatoes are evenly coated. Spread potatoes in a single layer on a foil lined 15x10-inch pan.  
 Bake, uncovered, for 45 to 50 minutes.
-
-Garlic Yellow Potato Wedges
 
 ## Mozzarella Sticks {#mozzarella-sticks}
 
@@ -1796,18 +1412,6 @@ Place buttermilk, mayonnaise, 2 tablespoons of lime juice, and ranch mix in a bl
 
 Add the butter, olive oil, minced garlic, garlic powder, salt, and italian seasoning to a bowl. Mix the ingredients together until they form a fairly smooth mixture.
 
-Steamed Artichokes
-
-Garlic Cabbage
-
-Pretzel Salad
-
-Kaylene’s Baked Beans
-
- Baked Spinach Artichoke Dip
-
-Lemon Basil Pesto
-
 ## Turkey Giblet Gravy {#turkey-giblet-gravy}
 
 Turkey neck and giblets reserved from a turkey  
@@ -1839,8 +1443,6 @@ If gravy is lumpy, strain through a fine mesh sieve and return to saucepan.
 Reduce heat, add giblets and continue stirring until gravy is thick and coats the back of a spoon.  
 Pour into serving bowl or gravy boat and serve.	
 
-Nana’s Potato Salad 
-
 # **Preserves** {#preserves}
 
 ## Grandma Maryn’s Chokecherry Syrup {#grandma-maryn’s-chokecherry-syrup}
@@ -1862,20 +1464,6 @@ Begin by removing stems and washing your chokecherries. Combine the chokecherrie
 Let the cherries cool; then pour them into an old, clean T-shirt or pillowcase set in a large bowl or pan. (This apparatus may then be suspended over the pan for several hours to allow as much of the juice as possible to drip out. It’s ok to help the process along by squeezing the T-shirt or pillowcase. The remains (pits and pulp) can then be thrown away.)  
 One pound of berries will yield approximately 1 cup of juice.
 
-Strawberry Rhubarb Jam
-
-Grandma Dixon’s Jams
-
-Grandma’s Pickles
-
-Apple Butter
-
-Canned Apples/Pears
-
-Applesauce
-
-Buttermilk Syrup
-
 ## Cranberry Christmas Slush {#cranberry-christmas-slush}
 
 48 oz pineapple juice  
@@ -1894,7 +1482,4 @@ Let stand on the counter one hour before serving.
 
 Using a sturdy fork or knife, chop mixture into large chunks.  
 Place pieces in goblet or punch bowl, pour sprite over and garnish as desired.
-
-Links  
-[https://kalynskitchen.com/roasted-sweet-potatoes-sausage-and-broccoli-sheet-pan-meal/](https://kalynskitchen.com/roasted-sweet-potatoes-sausage-and-broccoli-sheet-pan-meal/)
 

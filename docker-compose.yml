@@ -1,0 +1,26 @@
+services:
+  app:
+    build: .
+    container_name: family-recipes
+    # Run as the host user so files created on the ./data bind mount are owned by
+    # bryce (uid 1000) and stay usable by the native ./start.sh workflow.
+    # Remove this line to run as root instead.
+    user: "${UID:-1000}:${GID:-1000}"
+    ports:
+      - "5051:5051"
+    environment:
+      # Absolute path so the SQLite DB and recipe images live on the bind mount
+      # regardless of where the app is installed inside the image.
+      ConnectionStrings__DefaultConnection: "Data Source=/data/recipes.db"
+      # Opportunistic photo imports (Ticket 15): OpenAI-compatible vision endpoint on the LAN.
+      # VISION_ENDPOINT_URL comes from .env; default is loopback = no endpoint found, jobs queue.
+      VisionImport__EndpointUrl: ${VISION_ENDPOINT_URL:-http://127.0.0.1:8888}
+      VisionImport__PollIntervalSeconds: 30
+      # Optional Bearer key for vision endpoints that require auth (they 401 without it); empty = no header sent.
+      VisionImport__ApiKey: ${VISION_API_KEY:-}
+    volumes:
+      - ./data:/data
+    # Auto-start: docker.service starts at boot, and this policy restarts the
+    # container whenever the daemon (re)starts or the container crashes. It stays
+    # stopped only if you explicitly `docker compose stop` it.
+    restart: unless-stopped

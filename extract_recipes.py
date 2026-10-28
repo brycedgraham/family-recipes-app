@@ -1,122 +1,194 @@
-import re
-import os
-import json
-import sys
-import requests
+#!/usr/bin/env python3
+"""Deterministically extract recipes from Recipes.md into recipes_json/*.json.
 
-# Configuration
-INPUT_FILE = "Recipes.md"
-OUTPUT_DIR = "recipes_json"
-OLLAMA_URL = "http://localhost:11434/api/chat"
-MODEL_NAME = "gemma4:26b"
+No LLM involved — the markdown format is regular enough to parse with rules.
 
-# The prompt for the LLM
-PROMPT_TEMPLATE = """
-Extract the recipe details from the following text.
-The output must be a valid JSON object with exactly these keys:
-- "title": The name of the recipe.
-- "ingredients": An array of strings, one for each ingredient.
-- "instructions": An array of strings, one for each step of the process.
+Format handled (see PLAN.md for notes):
+  # **Category** {#cat-slug}     category header
+  ## Title {#recipe-slug}        recipe header
+  - ingredient lines: start with a quantity token (digits, 1/2-style or unicode
+    fractions like ½ ⅔, "3 1⁄2"), or continue the ingredient block (no terminal
+    sentence punctuation, right after another ingredient line); bullets (* / -)
+    and trailing two-space line breaks are stripped
+  - instruction lines: numbered steps ("1. ...") or prose paragraphs; a full
+    sentence before any other content starts the instructions
+  - literal `Ingredients` / `Instructions` / `Directions` header lines split the
+    sections when present; otherwise classification is positional
 
-If a piece of information is missing, use an empty array or null.
-
-Text:
-{text}
-
-JSON Output:
+Usage:
+  python3 extract_recipes.py [--dry-run]
 """
 
-def split_recipes(file_path):
-    """Splits the markdown file into chunks based on '##' headers."""
-    if not os.path.exists(file_path):
-        print(f"Error: {file_path} not found.")
-        return []
+import re
+import sys
+from pathlib import Path
 
-    with open(file_path, 'r', encoding='utf-8') as f:
-        content = f.read()
+ROOT = Path(__file__).parent
+MD_PATH = ROOT / "Recipes.md"
+OUT_DIR = ROOT / "recipes_json"
 
-    # Split by '##' but keep the header in the chunk
-    # We use a lookahead to split before the '##'
-    chunks = re.split(r'\n(?=## )', content)
+FRACTIONS = "½⅓¼¾⅕⅛⅙⅔⅖⅗⅘⅚"
+QTY_RE = re.compile(
+    rf"^\s*(?:\d+\s+)?(?:{FRACTIONS}|\d+\s*[/⁄]\s*\d+|\d+(?:\.\d+)?)\b"
+)
+NUMBERED_STEP_RE = re.compile(r"^\s*\d+\.\s+")
+BULLET_RE = re.compile(r"^\s*[*•-]\s+")
+INGREDIENTS_HDR_RE = re.compile(r"^\s*Ingredients\s*:?\s*$", re.I)
+INSTRUCTIONS_HDR_RE = re.compile(r"^\s*(?:Instructions?|Directions)\s*:?\s*$", re.I)
+MD_ESCAPE_RE = re.compile(r"\\([!\"#%&'()*+,.\-/:;<=>?@\[\\\]^_`{|}~])")
 
-    # Filter out chunks that don't actually contain a recipe (e.g. the intro)
-    recipe_chunks = [c.strip() for c in chunks if c.strip().startswith('##')]
-    return recipe_chunks
 
-def slugify(text):
-    """Creates a filesystem-friendly name from a title."""
-    text = text.lower()
-    text = re.sub(r'[^a-z0-9\s-]', '', text)
-    return re.sub(r'[\s-]+', '_', text).strip('_')
+def clean_line(line: str) -> str:
+    """Strip markdown line-break spaces, bullets, and escape backslashes."""
+    line = MD_ESCAPE_RE.sub(r"\1", line)
+    line = BULLET_RE.sub("", line.rstrip())
+    return line.strip()
 
-def extract_recipe_with_llm(chunk):
-    """Sends a single chunk to Ollama for extraction."""
-    try:
-        payload = {
-            "model": MODEL_NAME,
-            "messages": [
-                {"role": "user", "content": PROMPT_TEMPLATE.format(text=chunk)}
-            ],
-            "stream": False
-        }
 
-        response = requests.post(OLLAMA_URL, json=payload)
-        response.raise_for_status()
+def is_sentence(line: str) -> bool:
+    """Instruction prose, not an ingredient: terminal punctuation, no quantity."""
+    return not QTY_RE.match(line) and line.rstrip().endswith((".", "!", "?"))
 
-        response_data = response.json()
-        # Ollama's /api/chat returns the response in ['message']['content']
-        response_text = response_data['message']['content']
 
-        # Find the JSON part (in case the LLM added markdown formatting)
-        json_match = re.search(r'(\{.*?\})', response_text, re.DOTALL)
-        if json_match:
-            return json.loads(json_match.group(1))
-        else:
-            print("Could not find JSON in LLM response.")
-            return None
-    except Exception as e:
-        print(f"Error during LLM extraction: {e}")
-        return None
+def classify_no_headers(lines: list[str]) -> tuple[list[str], list[str]]:
+    """Positional classification for sections without explicit headers.
 
-def main():
-    if not os.path.exists(OUTPUT_DIR):
-        os.makedirs(OUTPUT_DIR)
+    A line joins the ingredient block while it is still going: quantity-starting
+    lines always do; short colon-terminated labels before any step (e.g.
+    `Bread Dough:`) count as ingredient subheaders; other lines do if they lack
+    terminal sentence punctuation and either directly follow another ingredient
+    line or sit in the top region (before any instruction prose) under 60 chars."""
+    ingredients: list[str] = []
+    instructions: list[str] = []
+    seen_step = False
+    last_was_ing = False
 
-    if not os.path.exists(INPUT_FILE):
-        print(f"Error: {INPUT_FILE} not found.")
-        sys.exit(1)
-
-    print(f"Reading {INPUT_FILE}...")
-    chunks = split_recipes(INPUT_FILE)
-    print(f"Found {len(chunks)} recipes to process.")
-
-    for i, chunk in enumerate(chunks):
-        # Extract title from the first line of the chunk (the ## header)
-        lines = chunk.split('\n')
-        header_line = lines[0]
-        title_match = re.search(r'##\s*(.*)', header_line)
-
-        if not title_match:
-            print(f"Skipping chunk {i}: No valid title found.")
+    for raw in lines:
+        line = clean_line(raw)
+        if not line:
+            last_was_ing = False
             continue
-
-        title = title_match.group(1).strip()
-        filename = f"{slugify(title)}.json"
-        file_path = os.path.join(OUTPUT_DIR, filename)
-
-        print(f"[{i+1}/{len(chunks)}] Processing: {title}...")
-
-        recipe_data = extract_recipe_with_llm(chunk)
-
-        if recipe_data:  # ← fixed
-            recipe_data['title'] = title
-            with open(file_path, 'w', encoding='utf-8') as f:
-                json.dump(recipe_data, f, indent=2, ensure_ascii=False)
-            print(f"  -> Saved to {file_path}")
+        if NUMBERED_STEP_RE.match(line):
+            instructions.append(re.sub(r"^\s*\d+\.\s*", "", line))
+            seen_step = True
+            last_was_ing = False
+            continue
+        # All-caps subheadings ("FOR THE FILLING") mark instruction sections, not ingredients.
+        if line.isupper() and any(c.isalpha() for c in line) and not any(c.isdigit() for c in line):
+            instructions.append(line)
+            seen_step = True
+            last_was_ing = False
+            continue
+        ends_sentence = line.rstrip().endswith((".", "!", "?", ":"))
+        label = not seen_step and len(line) < 40 and line.endswith(":")
+        if QTY_RE.match(line) or label or (
+            not ends_sentence and (last_was_ing or (not seen_step and len(line) < 60))
+        ):
+            ingredients.append(line)
+            last_was_ing = True
         else:
-            print(f"  -> Failed to extract {title}")
+            instructions.append(line)
+            seen_step = True
+            last_was_ing = False
+    return ingredients, instructions
 
-    print("\nExtraction complete!")
+
+def classify_with_headers(lines: list[str]) -> tuple[list[str], list[str]]:
+    """Split on literal Ingredients/Instructions/Directions header lines.
+
+    A full-sentence line before the headers (a description paragraph) is routed
+    to instructions rather than ingredients."""
+    pre: list[str] = []
+    post: list[str] | None = None
+    for raw in lines:
+        line = clean_line(raw)
+        if not line:
+            continue
+        if INSTRUCTIONS_HDR_RE.match(line):
+            post = []
+            continue
+        if INGREDIENTS_HDR_RE.match(line):
+            continue
+        (post if post is not None else pre).append(line)
+    ingredients = [l for l in pre if not is_sentence(l)]
+    instructions = [l for l in pre if is_sentence(l)] + [
+        re.sub(r"^\s*\d+\.\s*", "", l) for l in (post or [])
+    ]
+    return ingredients, instructions
+
+
+def parse_md(text: str) -> list[dict]:
+    parts = re.split(r"^(?=#\s|\#\#\s)", text, flags=re.M)
+    recipes = []
+    category = None
+    for part in parts:
+        mcat = re.match(r"^#\s+\*\*(.+?)\*\*\s+\{#[a-z0-9-]+\}", part)
+        if mcat:
+            category = mcat.group(1).strip()
+            continue
+        mrec = re.match(r"^##\s+(.+?)\s+\{#([a-z0-9-]+)\}\n?(.*)$", part, re.S)
+        if not mrec:
+            continue
+        title, slug, body = mrec.group(1).strip(), mrec.group(2), mrec.group(3)
+        lines = [l for l in body.split("\n")]
+        has_headers = any(
+            INSTRUCTIONS_HDR_RE.match(clean_line(l)) or INGREDIENTS_HDR_RE.match(clean_line(l))
+            for l in lines
+        )
+        if has_headers:
+            ingredients, instructions = classify_with_headers(lines)
+        else:
+            ingredients, instructions = classify_no_headers(lines)
+        recipes.append({
+            "title": title,
+            "slug": slug,
+            "category": category or "Uncategorized",
+            "ingredients": ingredients,
+            "instructions": instructions,
+        })
+    return recipes
+
+
+def main() -> int:
+    dry_run = "--dry-run" in sys.argv
+    text = MD_PATH.read_text(encoding="utf-8")
+    recipes = parse_md(text)
+
+    problems = []
+    for r in recipes:
+        if not r["ingredients"]:
+            problems.append(f"  no ingredients: {r['title']}")
+        if not r["instructions"]:
+            problems.append(f"  no instructions: {r['title']}")
+
+    print(f"parsed {len(recipes)} recipes from {MD_PATH.name}")
+    for r in recipes:
+        print(f"\n=== {r['title']}  [{r['category']}]  ({r['slug']})")
+        print(f"  ingredients ({len(r['ingredients'])}):")
+        for i in r["ingredients"]:
+            print(f"    - {i}")
+        print(f"  instructions ({len(r['instructions'])}):")
+        for i in r["instructions"]:
+            shown = i if len(i) <= 100 else i[:97] + "..."
+            print(f"    * {shown}")
+    if problems:
+        print("\nPROBLEMS:")
+        print("\n".join(problems))
+
+    if not dry_run:
+        OUT_DIR.mkdir(exist_ok=True)
+        # Remove stale extraction output so the directory mirrors the markdown.
+        for old in OUT_DIR.glob("*.json"):
+            old.unlink()
+        import json
+        for r in recipes:
+            payload = {k: r[k] for k in ("title", "category", "ingredients", "instructions")}
+            (OUT_DIR / f"{r['slug']}.json").write_text(
+                json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
+            )
+        print(f"\nwrote {len(recipes)} files to {OUT_DIR.relative_to(ROOT)}/")
+    return 0
+
 
 if __name__ == "__main__":
-    main()
+    raise SystemExit(main())

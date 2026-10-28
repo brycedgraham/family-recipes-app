@@ -1,0 +1,134 @@
+using Microsoft.AspNetCore.StaticFiles;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.FileProviders;
+using RecipeApp.Core.Interfaces;
+using RecipeApp.Infrastructure.Data;
+using RecipeApp.Infrastructure.Repositories;
+using RecipeApp.Api;
+using RecipeApp.Api.Services;
+
+// `dotnet run -- seed` imports recipes_json/*.json and exits.
+if (args.Contains("seed"))
+{
+    var configuration = new ConfigurationBuilder()
+        .SetBasePath(AppContext.BaseDirectory)
+        .AddJsonFile("appsettings.json", optional: true)
+        .AddJsonFile("appsettings.Development.json", optional: true)
+        .AddEnvironmentVariables()
+        .Build();
+    await SeedData.RunAsync(configuration);
+    return;
+}
+var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddOpenApi();
+builder.Services.AddControllers();
+
+// Database
+var connectionString = SqliteDatabase.Resolve(
+    builder.Configuration.GetConnectionString("DefaultConnection")
+        ?? throw new InvalidOperationException("Missing ConnectionStrings:DefaultConnection"));
+
+builder.Services.AddDbContext<RecipeDbContext>(options =>
+    options.UseSqlite(connectionString));
+
+// Repositories
+builder.Services.AddScoped<IRecipeRepository, RecipeRepository>();
+builder.Services.AddScoped<IShoppingListRepository, ShoppingListRepository>();
+builder.Services.AddScoped<IMealPlanRepository, MealPlanRepository>();
+
+// Recipe images: physical files live next to the database (data/images) and are served at /api/images,
+// so image requests go through the same /api origin as everything else (dev proxy + single-process prod).
+var imagesDirectory = Path.Combine(SqliteDatabase.DataDirectory ?? throw new InvalidOperationException("Database not resolved."), "images");
+builder.Services.AddSingleton(new ImageStore(imagesDirectory));
+
+// Web recipe importer: browser-like user agent + bounded timeout for fetching pages and hero photos.
+builder.Services.AddHttpClient<RecipeUrlImporter>(client =>
+{
+    client.Timeout = TimeSpan.FromSeconds(20);
+    client.DefaultRequestHeaders.UserAgent.ParseAdd("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36");
+    client.DefaultRequestHeaders.Accept.ParseAdd("text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8");
+});
+
+// Opportunistic photo imports (Ticket 15): staged photos + a background worker that extracts recipes via the
+// LAN's OpenAI-compatible vision endpoint whenever it is online. In Docker, VisionImport__EndpointUrl comes
+// from docker-compose (.env interpolation); native runs can export VISION_ENDPOINT_URL instead.
+var visionEndpointUrl = builder.Configuration["VisionImport:EndpointUrl"]
+    ?? Environment.GetEnvironmentVariable("VISION_ENDPOINT_URL")
+    ?? "http://127.0.0.1:8888"; // no endpoint configured → probe fails, jobs queue
+builder.Services.AddSingleton(new VisionEndpointStatus(visionEndpointUrl));
+builder.Services.AddSingleton(new ImportQueueStore(Path.Combine(SqliteDatabase.DataDirectory!, "import_queue")));
+builder.Services.AddSingleton<VisionImportWakeSignal>();
+builder.Services.AddHttpClient(VisionImportWorker.ProbeClientName, client => client.Timeout = TimeSpan.FromSeconds(3));
+builder.Services.AddHttpClient(VisionImportWorker.InferenceClientName, client => client.Timeout = TimeSpan.FromSeconds(180));
+builder.Services.AddHostedService<VisionImportWorker>();
+
+var app = builder.Build();
+
+// Create the SQLite database on first run if it does not exist yet (same behavior as the seed command).
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<RecipeDbContext>();
+    await db.Database.MigrateAsync();
+    // Backfill store / pantry-staple defaults for ingredients seeded before that support existed.
+    await RecipeApp.Infrastructure.Data.IngredientBackfill.ApplyDefaultsAsync(db);
+    // Ensure the default stores + any already-assigned store names exist in the Stores table.
+    await RecipeApp.Infrastructure.Data.IngredientBackfill.EnsureStoresAsync(db);
+
+    // A container restart mid-photo-import leaves jobs "Processing"; requeue them for the worker.
+    var requeued = await db.RecipeImportJobs
+        .Where(j => j.Status == "Processing")
+        .ExecuteUpdateAsync(s => s.SetProperty(j => j.Status, "Pending"));
+    if (requeued > 0)
+    {
+        scope.ServiceProvider.GetRequiredService<ILoggerFactory>()
+            .CreateLogger("Program").LogInformation("Requeued {Count} interrupted photo import job(s)", requeued);
+    }
+}
+if (app.Environment.IsDevelopment())
+{
+    app.MapOpenApi();
+}
+
+// Single-process hosting: when the built SvelteKit SPA (client/dist) exists, serve it from this server.
+var repoRoot = Path.GetFullPath(Path.Combine(SqliteDatabase.DataDirectory!, ".."));
+var spaDirectory = Path.Combine(repoRoot, "client", "dist");
+if (!Directory.Exists(spaDirectory)) spaDirectory = null;
+
+if (spaDirectory is not null)
+{
+    var spaProvider = new PhysicalFileProvider(spaDirectory);
+    // .webmanifest is missing from the default extension map; Android Chrome requires application/manifest+json.
+    var spaContentTypes = new FileExtensionContentTypeProvider();
+    spaContentTypes.Mappings[".webmanifest"] = "application/manifest+json";
+    app.UseDefaultFiles(new DefaultFilesOptions { FileProvider = spaProvider, DefaultFileNames = ["index.html"] });
+    app.UseStaticFiles(new StaticFileOptions { FileProvider = spaProvider, ContentTypeProvider = spaContentTypes });
+}
+
+app.UseStaticFiles(new StaticFileOptions
+{
+    FileProvider = new PhysicalFileProvider(imagesDirectory),
+    RequestPath = "/api/images",
+});
+
+// Pin routing to run AFTER the static-file middleware above. Without an explicit UseRouting,
+// .NET 10 lets endpoint matching (incl. the /api/{**rest} catch-all below) beat UseStaticFiles,
+// which would 404 every /api/images/... request instead of serving the file.
+app.UseRouting();
+
+// HTTPS redirection is only useful for local dev (launchSettings https profile); on the LAN box it would 307 to a dead port.
+if (app.Environment.IsDevelopment())
+{
+    app.UseHttpsRedirection();
+}
+
+app.MapControllers();
+
+if (spaDirectory is not null)
+{
+    // Unmatched non-API routes fall back to the SPA shell; unmatched /api/* routes must 404 instead.
+    app.MapFallbackToFile("index.html", new StaticFileOptions { FileProvider = new PhysicalFileProvider(spaDirectory) });
+}
+app.Map("/api/{**rest}", () => Results.NotFound(new { error = "Not found." }));
+
+app.Run();

@@ -1,0 +1,16 @@
+{
+  "id": "/",
+  "name": "Family Recipes",
+  "short_name": "Recipes",
+  "description": "Browse, edit and plan family recipes.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "theme_color": "#2d5a3f",
+  "background_color": "#f8f5ee",
+  "icons": [
+    { "src": "/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" },
+    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" }
+  ]
+}

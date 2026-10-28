@@ -1,0 +1,161 @@
+using Microsoft.EntityFrameworkCore;
+using RecipeApp.Core;
+using RecipeApp.Core.Interfaces;
+using RecipeApp.Core.Models;
+using RecipeApp.Infrastructure.Data;
+
+namespace RecipeApp.Infrastructure.Repositories;
+
+public class RecipeRepository : IRecipeRepository
+{
+    private readonly RecipeDbContext _context;
+
+    public RecipeRepository(RecipeDbContext context)
+    {
+        _context = context;
+    }
+
+    public async Task<Recipe?> GetByIdAsync(Guid id)
+    {
+        return await _context.Recipes
+            .Include(r => r.RecipeIngredients)
+                .ThenInclude(ri => ri.Ingredient)
+            .Include(r => r.Steps)
+            .Include(r => r.Categories)
+            .Include(r => r.Images)
+            .FirstOrDefaultAsync(r => r.Id == id);
+    }
+
+    public async Task<IReadOnlyList<Recipe>> GetAllAsync(string? search = null, string? categoryName = null, CancellationToken cancellationToken = default)
+    {
+        var query = _context.Recipes
+            .Include(r => r.Categories)
+            .Include(r => r.RecipeIngredients).ThenInclude(ri => ri.Ingredient)
+            .Include(r => r.Steps)
+            .Include(r => r.Images)
+            .AsNoTracking();
+
+        if (!string.IsNullOrWhiteSpace(search))
+        {
+            var term = search.Trim();
+            query = query.Where(r => EF.Functions.Like(r.Title, $"%{term}%")
+                || (r.Description != null && EF.Functions.Like(r.Description, $"%{term}%")));
+        }
+
+        if (!string.IsNullOrWhiteSpace(categoryName))
+        {
+            var category = categoryName.Trim();
+            query = query.Where(r => r.Categories.Any(c => c.Name == category));
+        }
+
+        return await query.OrderBy(r => r.Title).ToListAsync(cancellationToken);
+    }
+
+    public async Task<Recipe> AddAsync(Recipe recipe)
+    {
+        recipe.CreatedAt = DateTime.UtcNow;
+        recipe.UpdatedAt = DateTime.UtcNow;
+        await _context.Recipes.AddAsync(recipe);
+        await _context.SaveChangesAsync();
+        return recipe;
+    }
+
+    public async Task<Recipe> UpdateAsync(Recipe recipe)
+    {
+        recipe.UpdatedAt = DateTime.UtcNow;
+        await _context.SaveChangesAsync();
+        return recipe;
+    }
+
+    public async Task<bool> DeleteAsync(Guid id)
+    {
+        var recipe = await _context.Recipes.FindAsync(id);
+        if (recipe == null) return false;
+
+        _context.Recipes.Remove(recipe);
+        await _context.SaveChangesAsync();
+        return true;
+    }
+
+    public async Task<IReadOnlyList<CategorySummary>> GetCategoriesAsync(CancellationToken cancellationToken = default)
+    {
+        var categories = await _context.Categories
+            .Include(c => c.Recipes)
+            .AsNoTracking()
+            .ToListAsync(cancellationToken);
+
+        return categories
+            .Select(c => new CategorySummary(c.Id, c.Name, c.Description, c.Recipes.Count))
+            .OrderBy(s => s.Name, StringComparer.OrdinalIgnoreCase)
+            .ToList();
+    }
+
+    public async Task<Category> FindOrCreateCategoryAsync(string name)
+    {
+        var trimmed = name.Trim();
+        var existing = await _context.Categories.FirstOrDefaultAsync(c => EF.Functions.Like(c.Name, trimmed));
+        if (existing != null) return existing;
+
+        var category = new Category { Name = trimmed };
+        _context.Categories.Add(category);
+        await _context.SaveChangesAsync();
+        return category;
+    }
+
+    public async Task<Ingredient> FindOrCreateIngredientAsync(string name, string? notes = null)
+    {
+        var trimmed = name.Trim();
+        var normalized = IngredientText.NormalizeName(trimmed);
+        if (normalized.Length == 0) normalized = trimmed.ToLowerInvariant();
+
+        var existing = await _context.Ingredients.FirstOrDefaultAsync(i => i.NormalizedName == normalized);
+        if (existing is not null)
+        {
+            // Backfill hints for rows seeded before classifier / store / pantry support.
+            var changed = false;
+            if (string.IsNullOrEmpty(existing.Category))
+            {
+                existing.Category = IngredientCategoryClassifier.GuessCategory(normalized);
+                changed = true;
+            }
+            if (existing.PreferredStore is null)
+            {
+                existing.PreferredStore = IngredientDefaults.DetectPreferredStore(existing.Name, notes);
+                changed = true;
+            }
+            if (!existing.IsPantryStaple && IngredientDefaults.IsPantryStaple(normalized))
+            {
+                existing.IsPantryStaple = true;
+                changed = true;
+            }
+            if (changed) await _context.SaveChangesAsync();
+            return existing;
+        }
+
+        var ingredient = new Ingredient
+        {
+            Name = trimmed,
+            NormalizedName = normalized,
+            Category = IngredientCategoryClassifier.GuessCategory(normalized),
+            PreferredStore = IngredientDefaults.DetectPreferredStore(trimmed, notes),
+            IsPantryStaple = IngredientDefaults.IsPantryStaple(normalized),
+        };
+        _context.Ingredients.Add(ingredient);
+        await _context.SaveChangesAsync();
+        return ingredient;
+    }
+
+    public async Task UpdateIngredientPreferencesAsync(Guid? ingredientId, string normalizedName, string? store, bool storeTouched, bool? isPantryStaple)
+    {
+        var ingredient = ingredientId is { } id
+            ? await _context.Ingredients.FirstOrDefaultAsync(i => i.Id == id)
+            : null;
+        if (ingredient is null && !string.IsNullOrWhiteSpace(normalizedName))
+            ingredient = await _context.Ingredients.FirstOrDefaultAsync(i => i.NormalizedName == normalizedName);
+        if (ingredient is null) return; // standalone manual item with no catalog match
+
+        if (storeTouched) ingredient.PreferredStore = string.IsNullOrWhiteSpace(store) ? null : store.Trim();
+        if (isPantryStaple.HasValue) ingredient.IsPantryStaple = isPantryStaple.Value;
+        await _context.SaveChangesAsync();
+    }
+}

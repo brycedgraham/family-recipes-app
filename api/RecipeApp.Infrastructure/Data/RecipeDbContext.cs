@@ -19,6 +19,7 @@ public class RecipeDbContext : DbContext
     public DbSet<MealPlanEntry> MealPlanEntries => Set<MealPlanEntry>();
     public DbSet<RecipeImage> RecipeImages => Set<RecipeImage>();
     public DbSet<Store> Stores => Set<Store>();
+    public DbSet<RecipeImportJob> RecipeImportJobs => Set<RecipeImportJob>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -157,6 +158,20 @@ public class RecipeDbContext : DbContext
         modelBuilder.Entity<Store>(entity =>
         {
             entity.Property(s => s.Name).HasMaxLength(50).IsRequired();
+        });
+
+        // RecipeImportJob (Ticket 15): photo-import queue metadata; staged files live on disk under
+        // data/import_queue/{Id}/ and there is deliberately no FK to Recipes (a completed recipe may be
+        // deleted while its job history remains).
+        modelBuilder.Entity<RecipeImportJob>(entity =>
+        {
+            entity.HasIndex(j => new { j.Status, j.CreatedAt });
+            entity.Property(j => j.Status).HasMaxLength(20).IsRequired();
+            entity.Property(j => j.FileNamesJson).IsRequired();
+            entity.Property(j => j.Category).HasMaxLength(100);
+            entity.Property(j => j.RecipeTitle).HasMaxLength(200);
+            entity.Property(j => j.ModelUsed).HasMaxLength(150);
+            entity.Property(j => j.Error).HasMaxLength(1000);
         });
 
         // Recipe-Category many-to-many

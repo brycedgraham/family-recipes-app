@@ -69,6 +69,28 @@ export function importRecipeFromUrl(url) {
   return request('/recipes/import-url', { method: 'POST', body: JSON.stringify({ url }) });
 }
 
+// Photo recipe imports (Ticket 15): photos are staged server-side and extracted asynchronously by the
+// vision worker; `files` is a File[]/FileList-carrying array of 1-4 images, category optional.
+export function uploadRecipePhotos(files, category) {
+  const form = new FormData();
+  for (const file of files) form.append('files', file);
+  if (category) form.append('category', category);
+  return request('/recipes/import-photo', { method: 'POST', headers: {}, body: form });
+}
+
+// Recent import jobs + live vision-endpoint status: { endpointOnline, activeModel, endpointUrl, jobs }.
+export function getPhotoImportJobs() {
+  return request('/recipes/import-photo/jobs');
+}
+
+export function retryPhotoImportJob(id) {
+  return request(`/recipes/import-photo/jobs/${id}/retry`, { method: 'POST' });
+}
+
+export function deletePhotoImportJob(id) {
+  return request(`/recipes/import-photo/jobs/${id}`, { method: 'DELETE' });
+}
+
 // Recipe images (multipart; no JSON content-type so fetch sets the form boundary)
 export async function uploadRecipeImage(recipeId, file) {
   const form = new FormData();

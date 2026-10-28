@@ -50,6 +50,19 @@ builder.Services.AddHttpClient<RecipeUrlImporter>(client =>
     client.DefaultRequestHeaders.Accept.ParseAdd("text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8");
 });
 
+// Opportunistic photo imports (Ticket 15): staged photos + a background worker that extracts recipes via the
+// LAN's OpenAI-compatible vision endpoint whenever it is online. In Docker, VisionImport__EndpointUrl comes
+// from docker-compose (.env interpolation); native runs can export VISION_ENDPOINT_URL instead.
+var visionEndpointUrl = builder.Configuration["VisionImport:EndpointUrl"]
+    ?? Environment.GetEnvironmentVariable("VISION_ENDPOINT_URL")
+    ?? "http://127.0.0.1:8888"; // no endpoint configured → probe fails, jobs queue
+builder.Services.AddSingleton(new VisionEndpointStatus(visionEndpointUrl));
+builder.Services.AddSingleton(new ImportQueueStore(Path.Combine(SqliteDatabase.DataDirectory!, "import_queue")));
+builder.Services.AddSingleton<VisionImportWakeSignal>();
+builder.Services.AddHttpClient(VisionImportWorker.ProbeClientName, client => client.Timeout = TimeSpan.FromSeconds(3));
+builder.Services.AddHttpClient(VisionImportWorker.InferenceClientName, client => client.Timeout = TimeSpan.FromSeconds(180));
+builder.Services.AddHostedService<VisionImportWorker>();
+
 var app = builder.Build();
 
 // Create the SQLite database on first run if it does not exist yet (same behavior as the seed command).
@@ -61,6 +74,16 @@ using (var scope = app.Services.CreateScope())
     await RecipeApp.Infrastructure.Data.IngredientBackfill.ApplyDefaultsAsync(db);
     // Ensure the default stores + any already-assigned store names exist in the Stores table.
     await RecipeApp.Infrastructure.Data.IngredientBackfill.EnsureStoresAsync(db);
+
+    // A container restart mid-photo-import leaves jobs "Processing"; requeue them for the worker.
+    var requeued = await db.RecipeImportJobs
+        .Where(j => j.Status == "Processing")
+        .ExecuteUpdateAsync(s => s.SetProperty(j => j.Status, "Pending"));
+    if (requeued > 0)
+    {
+        scope.ServiceProvider.GetRequiredService<ILoggerFactory>()
+            .CreateLogger("Program").LogInformation("Requeued {Count} interrupted photo import job(s)", requeued);
+    }
 }
 if (app.Environment.IsDevelopment())
 {

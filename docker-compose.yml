@@ -12,6 +12,10 @@ services:
       # Absolute path so the SQLite DB and recipe images live on the bind mount
       # regardless of where the app is installed inside the image.
       ConnectionStrings__DefaultConnection: "Data Source=/data/recipes.db"
+      # Opportunistic photo imports (Ticket 15): OpenAI-compatible vision endpoint on the LAN.
+      # VISION_ENDPOINT_URL comes from .env; default is loopback = no endpoint found, jobs queue.
+      VisionImport__EndpointUrl: ${VISION_ENDPOINT_URL:-http://127.0.0.1:8888}
+      VisionImport__PollIntervalSeconds: 30
     volumes:
       - ./data:/data
     # Auto-start: docker.service starts at boot, and this policy restarts the

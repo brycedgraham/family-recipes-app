@@ -1,9 +1,10 @@
 <script>
   import { goto } from '$app/navigation';
-  import { fetchRecipes, fetchCategories } from '#lib/api.js';
+  import { fetchRecipes, fetchCategories, getPhotoImportJobs } from '#lib/api.js';
   import CategoryList from '#lib/components/CategoryList.svelte';
   import RecipeCard from '#lib/components/RecipeCard.svelte';
   import ImportUrlModal from '#lib/components/ImportUrlModal.svelte';
+  import PhotoImportModal from '#lib/components/PhotoImportModal.svelte';
 
   let categories = $state([]);
   let recipes = $state(null); // null while loading
@@ -11,6 +12,9 @@
   let searchInput = $state('');
   let searchQuery = $state('');
   let importOpen = $state(false);
+  let photoImportOpen = $state(false);
+  let photoActiveCount = $state(0); // Pending + Processing jobs, shown as a badge on the sidebar button
+  let refreshToken = $state(0); // bump to re-fetch the recipe list (e.g. a photo import completed)
 
   fetchCategories().then(data => {
     categories = data;
@@ -25,9 +29,15 @@
     return () => clearTimeout(timer);
   });
 
+  // One-shot badge bootstrap; the modal reports live counts back while it is open.
+  getPhotoImportJobs().then(data => {
+    photoActiveCount = (data.jobs ?? []).filter(j => j.status === 'Pending' || j.status === 'Processing').length;
+  }).catch(() => { /* badge stays hidden until the modal opens */ });
+
   $effect(() => {
     let cancelled = false;
     recipes = null;
+    refreshToken; // re-run when a photo import lands new recipes
     fetchRecipes({ q: searchQuery || undefined, category: selectedCategory })
       .then(data => { if (!cancelled) recipes = data; })
       .catch(err => { console.error('Failed to load recipes:', err); if (!cancelled) recipes = []; });
@@ -48,6 +58,7 @@
     <hr style="margin: 20px 0" />
     <a href="/recipes/new" class="button-link" style="text-align: center">Add New Recipe</a>
     <button type="button" class="secondary" style="width: 100%; margin-top: 8px; text-align: center" onclick={() => (importOpen = true)}>Import from URL</button>
+    <button type="button" class="secondary" style="width: 100%; margin-top: 8px; text-align: center" onclick={() => (photoImportOpen = true)}>Import from Photo{#if photoActiveCount > 0} ({photoActiveCount}){/if}</button>
     <a href="/api/backup" download class="secondary" style="display: block; width: 100%; margin-top: 8px">Download Backup</a>
   </aside>
   <main class="App-main-content">
@@ -77,5 +88,12 @@
       importOpen = false;
       goto(`/recipes/${recipe.id}`);
     }}
+  />
+
+  <PhotoImportModal
+    open={photoImportOpen}
+    onClose={() => (photoImportOpen = false)}
+    onRecipesChanged={() => (refreshToken += 1)}
+    onActiveChange={count => (photoActiveCount = count)}
   />
 </div>

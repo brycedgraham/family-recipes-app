@@ -476,6 +476,21 @@ label {
   font-size: 18px;
 }
 
+.gallery-cover {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  height: 28px;
+  padding: 0 10px;
+  border-radius: 999px;
+  background: var(--primary); /* Shorthand resets the plank gradient */
+  color: #fff;
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+}
+
 .gallery-thumbs {
   display: flex;
   gap: 10px;
@@ -1552,6 +1567,7 @@ select.sl-store-pill option {
   .sl-added,
   .gallery-thumbs,
   .gallery-x,
+  .gallery-cover,
   .theme-toggle {
     display: none !important;
   }

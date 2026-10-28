@@ -114,6 +114,11 @@ export function deleteRecipeImage(recipeId, fileName) {
   return request(`/recipes/${recipeId}/images/${encodeURIComponent(fileName)}`, { method: 'DELETE' });
 }
 
+// Make a photo the recipe's cover (moves it to the front of the gallery); returns the updated recipe.
+export function setRecipeCoverImage(recipeId, fileName) {
+  return request(`/recipes/${recipeId}/images/${encodeURIComponent(fileName)}/cover`, { method: 'PUT' });
+}
+
 // Shopping lists
 export function fetchShoppingLists() {
   return request('/shopping-lists');

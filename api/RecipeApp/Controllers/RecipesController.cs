@@ -199,6 +199,29 @@ public class RecipesController : ControllerBase
         return Ok(RecipeMapper.ToDto(updated));
     }
 
+    /// <summary>Makes the given photo the recipe's cover (first in the gallery). All rows are renumbered so
+    /// SortOrder stays collision-free even after earlier deletions.</summary>
+    [HttpPut("{id:guid}/images/{fileName}/cover")]
+    public async Task<ActionResult<RecipeDto>> SetCoverImage(Guid id, string fileName)
+    {
+        var recipe = await _recipes.GetByIdAsync(id);
+        if (recipe is null) return NotFound();
+
+        var images = recipe.Images.OrderBy(i => i.SortOrder).ThenBy(i => i.CreatedAt).ToList();
+        var target = images.FirstOrDefault(i => i.FileName == fileName);
+        if (target is null) return NotFound();
+
+        var rest = images.Where(i => !ReferenceEquals(i, target)).ToList();
+        target.SortOrder = 0;
+        for (var idx = 0; idx < rest.Count; idx++)
+        {
+            rest[idx].SortOrder = idx + 1;
+        }
+
+        var updated = await _recipes.UpdateAsync(recipe);
+        return Ok(RecipeMapper.ToDto(updated));
+    }
+
     private async Task ApplyAsync(Recipe recipe, RecipeRequest request)
     {
         recipe.Title = request.Name.Trim();

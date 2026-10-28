@@ -1,5 +1,5 @@
 <script>
-  import { fetchShoppingLists, createShoppingList, addRecipesToShoppingList, addMealPlanEntry, uploadRecipeImage, deleteRecipeImage } from '#lib/api.js';
+  import { fetchShoppingLists, createShoppingList, addRecipesToShoppingList, addMealPlanEntry, uploadRecipeImage, deleteRecipeImage, setRecipeCoverImage } from '#lib/api.js';
   import { formatQuantity } from '#lib/format.js';
   import { mondayOf, todayISO, toISO } from '#lib/dates.js';
 
@@ -52,6 +52,18 @@
       imgMsg = 'Photo removed';
     } catch (err) {
       alert(`Remove failed: ${err.message}`);
+    }
+  }
+
+  // The photo shown in the hero becomes the cover (first in the gallery, and on the recipe card).
+  async function handleSetCover(url) {
+    try {
+      const updated = await setRecipeCoverImage(recipe.id, fileNameFromUrl(url));
+      imageUrlsOverride = updated.imageUrls ?? [];
+      activeImage = 0; // the chosen photo is now first — show it in the hero
+      imgMsg = 'Photo set as cover';
+    } catch (err) {
+      alert(`Failed to set cover: ${err.message}`);
     }
   }
 
@@ -168,6 +180,9 @@
     <div class="recipe-gallery mb-3">
       <div class="gallery-hero">
         <img src={imageUrls[activeImage]} alt="{recipe.name} - photo {activeImage + 1}" />
+        {#if activeImage > 0}
+          <button type="button" class="gallery-cover" aria-label="Set current photo as cover" onclick={() => handleSetCover(imageUrls[activeImage])}>★ Cover</button>
+        {/if}
         <button type="button" class="gallery-x" aria-label="Remove current photo" onclick={() => handleRemove(imageUrls[activeImage])}>&times;</button>
       </div>
       {#if imageUrls.length > 1}

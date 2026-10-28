@@ -1,3 +1,4 @@
+using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
@@ -46,6 +47,7 @@ public sealed class VisionImportWorker : BackgroundService
     private readonly ImportQueueStore _queue;
     private readonly ImageStore _images;
     private readonly TimeSpan _pollInterval;
+    private readonly string? _apiKey;
     private readonly ILogger<VisionImportWorker> _logger;
 
     /// <summary>Null = never probed; true/false = last probe outcome (used to log state changes once).</summary>
@@ -70,6 +72,17 @@ public sealed class VisionImportWorker : BackgroundService
         _logger = logger;
         var seconds = configuration.GetValue<int?>("VisionImport:PollIntervalSeconds");
         _pollInterval = TimeSpan.FromSeconds(seconds is > 0 ? seconds.Value : 30);
+        var apiKey = configuration.GetValue<string>("VisionImport:ApiKey");
+        _apiKey = string.IsNullOrWhiteSpace(apiKey) ? null : apiKey.Trim();
+    }
+
+    /// <summary>Creates a vision client and, when configured, attaches the Bearer key (auth-gated endpoints 401 without it).</summary>
+    private HttpClient CreateVisionClient(string name)
+    {
+        var client = _httpClients.CreateClient(name);
+        if (_apiKey is not null)
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", _apiKey);
+        return client;
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -117,15 +130,16 @@ public sealed class VisionImportWorker : BackgroundService
         using var scope = _scopeFactory.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<RecipeDbContext>();
 
+        // Probe every pass — even with an empty queue — so the UI status pill tracks model swaps and
+        // outages within one poll interval instead of freezing at the last upload-time probe.
+        var modelId = await ProbeAsync(ct);
+
         var pendingIds = await db.RecipeImportJobs
             .Where(j => j.Status == "Pending")
             .OrderBy(j => j.CreatedAt)
             .Select(j => j.Id)
             .ToListAsync(ct);
         if (pendingIds.Count == 0) return;
-
-        // Opportunistic: only bother the endpoint when there is actually work queued.
-        var modelId = await ProbeAsync(ct);
         if (modelId is null) return; // already logged; jobs stay Pending until the endpoint comes back
 
         foreach (var jobId in pendingIds)
@@ -140,7 +154,7 @@ public sealed class VisionImportWorker : BackgroundService
     {
         try
         {
-            var client = _httpClients.CreateClient(ProbeClientName);
+            var client = CreateVisionClient(ProbeClientName);
             using var response = await client.GetAsync($"{_status.EndpointUrl}/v1/models", ct);
             if (!response.IsSuccessStatusCode)
             {
@@ -283,7 +297,7 @@ public sealed class VisionImportWorker : BackgroundService
             },
         });
 
-        var client = _httpClients.CreateClient(InferenceClientName);
+        var client = CreateVisionClient(InferenceClientName);
         using var response = await client.PostAsync(
             $"{_status.EndpointUrl}/v1/chat/completions",
             new StringContent(payload, Encoding.UTF8, "application/json"),

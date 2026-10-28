@@ -48,3 +48,7 @@ Local OpenAI-compatible vision endpoint (`:8888`) now ingests cookbook photos as
 - Staged upload filenames are `{index}-{guid}{ext}` to keep vision-message ordering stable and avoid client filename collisions.
 - The endpoint being online at deploy time means photo imports process within seconds; offline periods cost nothing — jobs queue and the loop retries every 30 s.
 - A `Failed` job keeps its staged photos until Retry or Delete, per spec.
+
+## Follow-up (2026-10-28): live status pill + auth-gated endpoints
+- The status pill froze at the last probe because the worker only probed when jobs were queued (opportunistic design). Now `ProcessPendingJobsAsync` probes **every pass** (~30 s even with an empty queue), so model swaps, outages, and auth changes are reflected within one interval. Verified live: after the GPU host started requiring auth, the pill flipped to Offline within seconds instead of showing a stale model.
+- Auth-gated vision endpoints (401 on `/v1/models`): set `VISION_API_KEY` in `.env` → passed as `VisionImport__ApiKey` → Bearer header on probe + inference. Empty/unset = no header (unchanged behavior). Note: this repo's `.env` has CRLF line endings; the worker trims the key defensively.

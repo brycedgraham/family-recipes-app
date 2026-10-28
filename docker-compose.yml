@@ -16,6 +16,8 @@ services:
       # VISION_ENDPOINT_URL comes from .env; default is loopback = no endpoint found, jobs queue.
       VisionImport__EndpointUrl: ${VISION_ENDPOINT_URL:-http://127.0.0.1:8888}
       VisionImport__PollIntervalSeconds: 30
+      # Optional Bearer key for vision endpoints that require auth (they 401 without it); empty = no header sent.
+      VisionImport__ApiKey: ${VISION_API_KEY:-}
     volumes:
       - ./data:/data
     # Auto-start: docker.service starts at boot, and this policy restarts the
